@@ -9,8 +9,10 @@ def text_mode(output_image, text,svg_filename="output.svg"):
     font_size =100
 
     #pozycja startowa tekstu
-    x, y = 50, 100
-
+    start_x, y = 50, 150
+    x = start_x
+    letter_spacing = font_size * 0.5
+    
     # Kolor konturu i jego grubość
     color = (255,255,255)
     outline_color = (0,0,0)
@@ -18,19 +20,19 @@ def text_mode(output_image, text,svg_filename="output.svg"):
 
     dwg = svgwrite.Drawing(svg_filename, size=(w, h))
 
-    #dodajemy tekst do SVG
-    dwg.add(
-        dwg.text(
-            text,
-            insert=(x, y),
-            fill=svgwrite.rgb(*color),
-            stroke=svgwrite.rgb(*outline_color),
-            stroke_width=stroke_width,
-            font_size=font_size,
-            font_family="Arial"
+    for char in text:
+        dwg.add(
+            dwg.text(
+                char,
+                insert=(x, y),
+                fill=svgwrite.rgb(*color),
+                stroke=svgwrite.rgb(*outline_color),
+                stroke_width=stroke_width,
+                font_size=font_size,
+                font_family="Arial"
+            )
         )
-    )
-
+        x += letter_spacing 
 
     dwg.save()
     print(f"SVG zapisano jako {svg_filename}")
