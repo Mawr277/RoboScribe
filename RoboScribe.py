@@ -7,12 +7,12 @@ import svgwrite
 def text_mode(output_image, text,svg_filename="output.svg"):
     #czcionka
     font_size =100
+    font = ImageFont.truetype("arial.ttf", font_size)
 
     #pozycja startowa tekstu
     start_x, y = 50, 150
     x = start_x
-    letter_spacing = font_size * 0.5
-    
+
     # Kolor konturu i jego grubość
     color = (255,255,255)
     outline_color = (0,0,0)
@@ -21,6 +21,11 @@ def text_mode(output_image, text,svg_filename="output.svg"):
     dwg = svgwrite.Drawing(svg_filename, size=(w, h))
 
     for char in text:
+
+        # szerokość litery z faktycznej czcionki
+        bbox = font.getbbox(char)
+        letter_width = bbox[2] - bbox[0]
+
         dwg.add(
             dwg.text(
                 char,
@@ -32,7 +37,7 @@ def text_mode(output_image, text,svg_filename="output.svg"):
                 font_family="Arial"
             )
         )
-        x += letter_spacing 
+        x += letter_width
 
     dwg.save()
     print(f"SVG zapisano jako {svg_filename}")
@@ -42,4 +47,4 @@ def text_mode(output_image, text,svg_filename="output.svg"):
 h,w = (2000, 2000)
 img_text = Image.new('RGB', (w, h), color='white')
 
-text_mode(img_text, "aąęśćźżółabcdefghijklmnopqrstuwxyz")
+text_mode(img_text, "aąęść źżół abcdefghijklmnopqrstuwxyz")
