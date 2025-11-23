@@ -4,47 +4,63 @@ import cv2 as cv2
 from PIL import Image, ImageDraw, ImageFont
 import svgwrite
 
-def text_mode(output_image, text,svg_filename="output.svg"):
-    #czcionka
-    font_size =100
+def text_mode(output_image, text, svg_filename="output.svg"):
+    from PIL import ImageFont
+    import svgwrite
+
+    # czcionka
+    font_size = 100
     font = ImageFont.truetype("arial.ttf", font_size)
 
-    #pozycja startowa tekstu
+    # pozycja startowa tekstu
     start_x, y = 50, 150
     x = start_x
+    line_height = font_size * 1.2 
 
-    # Kolor konturu i jego grubość
-    color = (255,255,255)
-    outline_color = (0,0,0)
-    stroke_width =4
+    color = (255, 255, 255)
+    outline_color = (0, 0, 0)
+    stroke_width = 4
+
+    w, h = output_image.size
 
     dwg = svgwrite.Drawing(svg_filename, size=(w, h))
 
-    for char in text:
+    words = text.split(" ")
 
-        # szerokość litery z faktycznej czcionki
-        bbox = font.getbbox(char)
-        letter_width = bbox[2] - bbox[0]
+    for word in words:
+        #szerokosc slowa
+        word_width = sum(font.getbbox(c)[2] - font.getbbox(c)[0] for c in word) \
+                     + font.getbbox(" ")[2]
 
-        dwg.add(
-            dwg.text(
-                char,
-                insert=(x, y),
-                fill=svgwrite.rgb(*color),
-                stroke=svgwrite.rgb(*outline_color),
-                stroke_width=stroke_width,
-                font_size=font_size,
-                font_family="Arial"
+        #nowa linia jezeli sie nie miesci
+        if x + word_width > w - start_x:
+            x = start_x
+            y += line_height
+
+        #zapis w svg
+        for char in word + " ":
+            bbox = font.getbbox(char)
+            letter_width = bbox[2] - bbox[0]
+
+            dwg.add(
+                dwg.text(
+                    char,
+                    insert=(x, y),
+                    fill=svgwrite.rgb(*color),
+                    stroke=svgwrite.rgb(*outline_color),
+                    stroke_width=stroke_width,
+                    font_size=font_size,
+                    font_family="Arial"
+                )
             )
-        )
-        x += letter_width
+            x += letter_width
 
     dwg.save()
     print(f"SVG zapisano jako {svg_filename}")
 
 
 
-h,w = (2000, 2000)
+h,w = (1000, 1000)
 img_text = Image.new('RGB', (w, h), color='white')
 
 text_mode(img_text, "aąęść źżół abcdefghijklmnopqrstuwxyz")
