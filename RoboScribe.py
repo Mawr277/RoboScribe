@@ -10,12 +10,14 @@ def text_mode(output_image, text, svg_filename="output.svg"):
 
     # czcionka
     font_size = 100
+    min_font_size = 20
     font = ImageFont.truetype("arial.ttf", font_size)
 
     # pozycja startowa tekstu
     start_x, y = 50, 150
     x = start_x
     line_height = font_size * 1.2 
+    space_width = font.getbbox(" ")[2] - font.getbbox(" ")[0]
 
     color = (255, 255, 255)
     outline_color = (0, 0, 0)
@@ -27,10 +29,23 @@ def text_mode(output_image, text, svg_filename="output.svg"):
 
     words = text.split(" ")
 
+    while font_size >= min_font_size:
+        font = ImageFont.truetype("arial.ttf", font_size)
+        max_word_width = 0
+
+        for word in words:
+            word_width = sum(font.getbbox(c)[2]-font.getbbox(c)[0] for c in word) + space_width
+            if word_width > max_word_width:
+                max_word_width = word_width
+
+        if word_width <= w - 2 *start_x:
+            break
+        
+        font_size -= 2
+
     for word in words:
         #szerokosc slowa
-        word_width = sum(font.getbbox(c)[2] - font.getbbox(c)[0] for c in word) \
-                     + font.getbbox(" ")[2]
+        word_width = sum(font.getbbox(c)[2] - font.getbbox(c)[0] for c in word) + space_width
 
         #nowa linia jezeli sie nie miesci
         if x + word_width > w - start_x:
@@ -63,4 +78,4 @@ def text_mode(output_image, text, svg_filename="output.svg"):
 h,w = (1000, 1000)
 img_text = Image.new('RGB', (w, h), color='white')
 
-text_mode(img_text, "aąęść źżół abcdefghijklmnopqrstuwxyz")
+text_mode(img_text, "aąęść źżół abcdefghij klmnopqr stuwx yz")
