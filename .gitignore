@@ -1,0 +1,11 @@
+# General
+**/.vscode
+**/.devcontainer
+/datasheets
+
+# Firmware
+**/.clangd
+**/build/
+
+# Temporary
+
