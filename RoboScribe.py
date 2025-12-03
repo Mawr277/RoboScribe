@@ -4,14 +4,30 @@ import cv2 as cv2
 from PIL import Image, ImageDraw, ImageFont
 import svgwrite
 
-def text_mode(output_image, text, svg_filename="output.svg"):
-    from PIL import ImageFont
-    import svgwrite
-
+def text_mode(output_image, text, svg_filename="output.svg", font_name = "arial.ttf"):
+    
     # czcionka
     font_size = 100
     min_font_size = 20
-    font = ImageFont.truetype("arial.ttf", font_size)
+
+    if font_name.lower() == 'times.ttf':
+        svg_font_family = 'Times New Roman'
+    elif font_name.lower() == 'arial.ttf':
+        svg_font_family = 'Arial'
+    else:
+        #defualt
+        font_name = 'arial.ttf'
+        svg_font_family = 'Arial'
+
+    try:
+        # Ładowanie czcionki po raz pierwszy
+        font = ImageFont.truetype(font_name, font_size)
+    except IOError:
+        print(f"Błąd ładowania czcionki '{font_name}'. Użycie domyślnej 'Arial'.")
+        font_name = 'arial.ttf'
+        svg_font_family = 'Arial'
+        font = ImageFont.truetype(font_name, font_size)
+    
 
     # pozycja startowa tekstu
     start_x, y = 50, 150
@@ -30,7 +46,7 @@ def text_mode(output_image, text, svg_filename="output.svg"):
     words = text.split(" ")
 
     while font_size >= min_font_size:
-        font = ImageFont.truetype("arial.ttf", font_size)
+        font = ImageFont.truetype(font_name, font_size)
         max_word_width = 0
 
         for word in words:
@@ -42,6 +58,11 @@ def text_mode(output_image, text, svg_filename="output.svg"):
             break
         
         font_size -= 2
+
+    #aktualizacja parametrow
+    font = ImageFont.truetype(font_name, font_size)
+    line_height = font_size * 1.2 
+    space_width = font.getbbox(" ")[2] - font.getbbox(" ")[0]
 
     for word in words:
         #szerokosc slowa
@@ -65,7 +86,7 @@ def text_mode(output_image, text, svg_filename="output.svg"):
                     stroke=svgwrite.rgb(*outline_color),
                     stroke_width=stroke_width,
                     font_size=font_size,
-                    font_family="Arial"
+                    font_family=svg_font_family
                 )
             )
             x += letter_width
@@ -78,4 +99,5 @@ def text_mode(output_image, text, svg_filename="output.svg"):
 h,w = (1000, 1000)
 img_text = Image.new('RGB', (w, h), color='white')
 
-text_mode(img_text, "aąęść źżół abcdefghij klmnopqr stuwx yz")
+text_mode(img_text, "aąęść źżół abcdefghij klmnopqr stuwx yz", svg_filename="output_times.svg", font_name="times.ttf")
+text_mode(img_text, "aąęść źżół abcdefghij klmnopqr stuwx yz", svg_filename="output_arial.svg", font_name="arial.ttf")
