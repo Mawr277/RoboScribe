@@ -2,10 +2,11 @@
 **/.vscode
 **/.devcontainer
 /datasheets
+/documents
 
 # Firmware
 **/.clangd
 **/build/
-
+**/sdkconfig
+**/sdkconfig.old
 # Temporary
-
