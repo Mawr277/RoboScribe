@@ -2,6 +2,7 @@
 **/.vscode
 **/.devcontainer
 /datasheets
+/documents
 
 # Firmware
 **/.clangd

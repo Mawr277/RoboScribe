@@ -16,5 +16,5 @@
 void servo_ledc_init(ledc_timer_t ledc_timer, 
                     ledc_channel_t ledc_channel,
                     int ledc_output_io);
-esp_err_t servo_set_position(ledc_channel_t servo_channel, 
+void servo_set_position(ledc_channel_t servo_channel, 
                     float angle);

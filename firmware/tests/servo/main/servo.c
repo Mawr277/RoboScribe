@@ -15,7 +15,7 @@ void app_main(void)
     servo_ledc_init(LEDC_TIMER, SERVO_CHANNEL, servoPin);
     while(1){
         for(float a = 0.0f; a < 181; a += 10){
-            ESP_ERROR_CHECK(servo_set_position(SERVO_CHANNEL, a));
+            servo_set_position(SERVO_CHANNEL, a);
             vTaskDelay(pdMS_TO_TICKS(200));
         }
         vTaskDelay(pdMS_TO_TICKS(5000));

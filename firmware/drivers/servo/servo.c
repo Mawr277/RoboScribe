@@ -32,10 +32,9 @@ void servo_ledc_init(ledc_timer_t ledc_timer_type,
 /**
  * @brief Set servo of servo_channel position for desired angle
  */
-esp_err_t servo_set_position(ledc_channel_t servo_channel, float angle){
+void servo_set_position(ledc_channel_t servo_channel, float angle){
     const float angleCoeff = (SERVO_DUTY_180 - SERVO_DUTY_0)/180.0f;
     uint32_t duty = (uint32_t)(SERVO_DUTY_0 + angle*angleCoeff);
-    printf("Duty: %ld, Angle: %f\n", duty, angle);
     ESP_ERROR_CHECK(ledc_set_duty(SERVO_LEDC_MODE, servo_channel, duty));
-    return ledc_update_duty(SERVO_LEDC_MODE, servo_channel);
+    ESP_ERROR_CHECK(ledc_update_duty(SERVO_LEDC_MODE, servo_channel));
 }
