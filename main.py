@@ -1,4 +1,4 @@
-from svgelements import SVG, Rect, Circle, Ellipse, Line, SimpleLine, Polyline, Polygon
+from svgelements import SVG, Rect, Circle, Ellipse, Line, SimpleLine, Polyline, Polygon, Text
 import numpy as np
 import math
 
@@ -7,7 +7,7 @@ skala = 1.0
 Rozdzielczosc = 1 
 
 # ---- wczytanie SVG ----
-svg = SVG.parse("test_shapes.svg")
+svg = SVG.parse("output_path_arial.svg")
 
 gcode_wyjsciowy = []
 
@@ -141,11 +141,16 @@ for element in svg.elements():
         punkty = przetwarzaj_polyline(element)
     elif isinstance(element, Polygon):
         punkty = przetwarzaj_polygon(element)
+    elif isinstance(element, Text):
+         print(f"Nieobsługiwany element: {type(element)} - przekonwertuj tekst na ścieżkę w edytorze SVG.")
+    else:
+        print(f"Nieobsługiwany element: {type(element)}")
+        continue
     
     generuj_gcode_dla_punktow(punkty)
 
 
-
+#TODO: zamiana współrzędnych X Y na kąty dla serwomechanizmów rysujących
 
 # ---- zapis ----
 with open("rysunek.gcode", "w") as f:
