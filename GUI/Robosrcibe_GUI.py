@@ -22,11 +22,13 @@ class MyApp(QWidget):
         self.w_label = QLabel("w:")
         self.h_label = QLabel("h:")
         self.font_label = QLabel("czcionka:")
+        self.file_name_label = QLabel("nazwa pliku:")
 
         #pola tekstowe
         self.text_input = QLineEdit()
         self.w_input = QLineEdit()
         self.h_input = QLineEdit()
+        self.file_name_input = QLineEdit()
 
         #wybor czcionki
         self.font_input = QComboBox()
@@ -56,10 +58,15 @@ class MyApp(QWidget):
         font_layout.addWidget(self.font_label)
         font_layout.addWidget(self.font_input)
 
+        file_name_layout = QHBoxLayout()
+        file_name_layout.addWidget(self.file_name_label)
+        file_name_layout.addWidget(self.file_name_input)
+
         main_layout.addLayout(text_layout)
         main_layout.addLayout(w_layout)
         main_layout.addLayout(h_layout)
         main_layout.addLayout(font_layout)
+        main_layout.addLayout(file_name_layout)
         main_layout.addWidget(self.button)
 
         self.setLayout(main_layout)
@@ -75,12 +82,14 @@ class MyApp(QWidget):
         w = self.w_input.text()
         h = self.h_input.text()
         czcionka = self.font_input.currentData()
+        file_name = self.file_name_input.text() + ".svg"
 
         # Przykładowa logika
         print("Tekst:", text)
         print("w:", w)
         print("h:", h)
         print("font:", czcionka)
+        print("nazwa pliku:", file_name)
         wynik = self.funkcja_logiki(text,w,h)
 
         # Opcjonalnie: wypisujemy wynik, jeśli logika coś zwróciła
