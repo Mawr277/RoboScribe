@@ -1,4 +1,5 @@
 import sys
+import os
 from PyQt6.QtWidgets import (
     QApplication,
     QWidget,
@@ -7,13 +8,18 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QVBoxLayout,
     QHBoxLayout,
-    QComboBox
+    QComboBox,
 )
+
+from PyQt6.QtGui import QIcon
 
 class MyApp(QWidget):
     def __init__(self, SvgToText):
         super().__init__()
+
+        # funkcje
         self.funkcja_logiki = SvgToText
+
         self.init_ui()
 
     def init_ui(self):
@@ -71,8 +77,13 @@ class MyApp(QWidget):
 
         self.setLayout(main_layout)
 
+        #ikona programu
+        folder = os.path.dirname(__file__)
+        icon_dir = os.path.join(folder, 'logo_Roboscribe.png')
+        app.setWindowIcon(QIcon(icon_dir))
+
         #okno
-        self.setWindowTitle("Moje GUI PyQt")
+        self.setWindowTitle("Roboscribe")
         self.setGeometry(300, 300, 400, 200)
 
     def on_button_click(self):
@@ -82,15 +93,24 @@ class MyApp(QWidget):
         w = self.w_input.text()
         h = self.h_input.text()
         czcionka = self.font_input.currentData()
-        file_name = self.file_name_input.text() + ".svg"
+        raw_name = self.file_name_input.text().strip()
 
+        if not raw_name: 
+            raw_name = "output" # Domyślna nazwa jak nic nie wpisano
+            
+        if not raw_name.lower().endswith(".svg"):
+            file_name = raw_name + ".svg"
+        else:
+            file_name = raw_name
+
+        #placeholder
         # Przykładowa logika
         print("Tekst:", text)
         print("w:", w)
         print("h:", h)
         print("font:", czcionka)
         print("nazwa pliku:", file_name)
-        wynik = self.funkcja_logiki(text,w,h)
+        wynik = self.funkcja_logiki(text,w,h, czcionka, file_name)
 
         # Opcjonalnie: wypisujemy wynik, jeśli logika coś zwróciła
         if wynik:
@@ -102,8 +122,8 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     
     #placeholder do sprawdzenia czy dziala
-    def placeholder_svg_to_text(t, w, h, font_name="arial.ttf"):
-        print(f"--- LOGIKA (TEST): Dostałem {t}, wymiary {w}x{h} ---")
+    def placeholder_svg_to_text(t, w, h, font_name="arial.ttf", file_name= "output.svg"):
+        print(f"--- LOGIKA (TEST): Dostałem {t}, wymiary {w}x{h} ---, font_name {font_name}, file_name = {file_name}")
         return "Gotowy SVG"
 
     # Przekazujemy tę funkcję do okna
