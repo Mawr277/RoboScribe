@@ -1,5 +1,6 @@
 import sys
 import os
+import ctypes
 from PyQt6.QtWidgets import (
     QApplication,
     QWidget,
@@ -10,8 +11,42 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QComboBox,
 )
-
 from PyQt6.QtGui import QIcon
+from PyQt6.QtSvgWidgets import QSvgWidget
+
+def add_line_edit(parent_layout, label_text, placeholder=""):
+    """
+    Tworzy Label + QLineEdit, układa je w rzędzie i dodaje do parent_layout.
+    Zwraca obiekt QLineEdit, aby można go było przypisać do zmiennej.
+    """
+    # 1. Tworzenie elementów
+    label = QLabel(label_text)
+    line_edit = QLineEdit()
+    line_edit.setPlaceholderText(placeholder)
+    
+    # 2. Układanie ich obok siebie
+    row_layout = QHBoxLayout()
+    row_layout.addWidget(label)
+    row_layout.addWidget(line_edit)
+    
+    # 3. Dodanie rzędu do głównego pionowego układu
+    parent_layout.addLayout(row_layout)
+    
+    # 4. WAŻNE: Zwracamy line_edit, żebyś mógł go używać w logice
+    return line_edit
+
+def add_combo_box(parent_layout, label_text, items):
+    label = QLabel(label_text)
+    combo = QComboBox()
+    for text,data in items:
+        combo.addItem(text, data)
+
+    row_layout = QHBoxLayout()
+    row_layout.addWidget(label)
+    row_layout.addWidget(combo)
+
+    parent_layout.addLayout(row_layout)
+    return combo
 
 class MyApp(QWidget):
     def __init__(self, SvgToText):
@@ -23,65 +58,35 @@ class MyApp(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        #labele
-        self.text_label = QLabel("Tekst:")
-        self.w_label = QLabel("w:")
-        self.h_label = QLabel("h:")
-        self.font_label = QLabel("czcionka:")
-        self.file_name_label = QLabel("nazwa pliku:")
 
-        #pola tekstowe
-        self.text_input = QLineEdit()
-        self.w_input = QLineEdit()
-        self.h_input = QLineEdit()
-        self.file_name_input = QLineEdit()
-
-        #wybor czcionki
-        self.font_input = QComboBox()
-        self.font_input.addItem("Arial", "arial.ttf")
-        self.font_input.addItem("Times New Roman", "Times New Roman.ttf")
-
-        #przycisk
-        self.button = QPushButton("Kliknij mnie")
-        self.button.clicked.connect(self.on_button_click)
-
-        #layout
         main_layout = QVBoxLayout()
-
-        text_layout = QHBoxLayout()
-        text_layout.addWidget(self.text_label)
-        text_layout.addWidget(self.text_input)
-
-        w_layout = QHBoxLayout()
-        w_layout.addWidget(self.w_label)
-        w_layout.addWidget(self.w_input)
-
-        h_layout = QHBoxLayout()
-        h_layout.addWidget(self.h_label)
-        h_layout.addWidget(self.h_input)
-
-        font_layout = QHBoxLayout()
-        font_layout.addWidget(self.font_label)
-        font_layout.addWidget(self.font_input)
-
-        file_name_layout = QHBoxLayout()
-        file_name_layout.addWidget(self.file_name_label)
-        file_name_layout.addWidget(self.file_name_input)
-
-        main_layout.addLayout(text_layout)
-        main_layout.addLayout(w_layout)
-        main_layout.addLayout(h_layout)
-        main_layout.addLayout(font_layout)
-        main_layout.addLayout(file_name_layout)
-        main_layout.addWidget(self.button)
-
-        self.setLayout(main_layout)
-
+        
         #ikona programu
         folder = os.path.dirname(__file__)
         icon_dir = os.path.join(folder, 'logo_Roboscribe.png')
         app.setWindowIcon(QIcon(icon_dir))
 
+        #pola tekstowe
+        self.text_input = add_line_edit(main_layout, "Tekst:", "np: Roboscribe")
+        self.w_input = add_line_edit(main_layout, "Szerokość:", "np: 300")
+        self.h_input = add_line_edit(main_layout, "Wysokość", "np: 400")
+        self.file_name_input = add_line_edit(main_layout, "Nazwa pliku wyjściowego:" , "np: output.svg")
+
+        #font
+        lista_czcionek = [
+            ("Arial", "arial.ttf"),
+            ("Times New Roman", "Times New Roman.ttf"),
+        ]
+        self.font_input = add_combo_box(main_layout, "Czcionka:", lista_czcionek)
+
+        #przycisk
+        self.button = QPushButton("generuj")
+        self.button.clicked.connect(self.on_button_click)
+        main_layout.addWidget(self.button)
+
+
+
+        self.setLayout(main_layout)
         #okno
         self.setWindowTitle("Roboscribe")
         self.setGeometry(300, 300, 400, 200)
@@ -119,7 +124,14 @@ class MyApp(QWidget):
 
 # --- Testowanie tego pliku ---
 if __name__ == "__main__":
+    myappid = 'roboscribe.gui'
+
     app = QApplication(sys.argv)
+
+    try:
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+    except ImportError:
+        pass # Ignorujemy, jeśli to nie Windows
     
     #placeholder do sprawdzenia czy dziala
     def placeholder_svg_to_text(t, w, h, font_name="arial.ttf", file_name= "output.svg"):
