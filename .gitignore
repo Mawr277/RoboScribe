@@ -1,2 +1,8 @@
 **\nowka
 **\tests
+
+# Dokumentacja Doxygena
+/docs/
+!/docs/latex/
+!/docs/latex/refman.pdf
+Doxyfile
