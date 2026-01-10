@@ -1,15 +1,17 @@
 **\nowka
 **\tests
 
-# Dokumentacja Doxygena
-!/docs/latex/
-!/docs/latex/refman.pdf
-/docs/
 Doxyfile
-konwersja_svgtogcode/main.py
-output_arial.svg
-output_path_arial.svg
-output_times.svg
-/konwersja_svgtogcode
-rysunek.gcode
-
+*.svg
+*.tex
+*.out
+*.log
+*.sty
+*.ind
+*.toc
+docs/latex/Makefile
+*.aux
+*.fdb_latexmk
+*.fls
+*.idx
+*.ilg
