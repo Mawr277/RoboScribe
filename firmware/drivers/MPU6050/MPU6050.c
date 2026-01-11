@@ -1,8 +1,16 @@
+/**
+ * @file MPU6050.c
+ * @author Maciej Nowicki (maciejnowicki1234@gmail.com)
+ * @brief Upraszcza implementacje odczytów z akcelerometru MPU6050.
+ * \n Stosuje standardowe biblioteki esp-idf do obsługi protokołu I2C.
+ * @version 1.00
+ * @date 2026-11-01
+ * 
+ * @copyright Copyright (c) 2026
+ * 
+ */
 #include "MPU6050.h"
 
-/**
- * @brief Initialize I2C master and device
- */
 void i2c_mpu6050_init(i2c_master_bus_handle_t *bus_handle, i2c_master_dev_handle_t *dev_handle)
 {
     i2c_device_config_t dev_config = {
@@ -11,13 +19,12 @@ void i2c_mpu6050_init(i2c_master_bus_handle_t *bus_handle, i2c_master_dev_handle
         .scl_speed_hz = I2C_MASTER_FREQ_HZ,
     };
     ESP_ERROR_CHECK(i2c_master_bus_add_device(*bus_handle, &dev_config, dev_handle));
-    // Turns off sleep mode just in case
+    // Wyłącza sleep mode
     ESP_ERROR_CHECK(mpu6050_register_write(*dev_handle, PWR_MGMT_1, 0 << MPU6050_RESET_BIT)); 
 }
 
-
 /**
- * @brief Read a sequence of bytes from a MPU9250 sensor registers
+ * @note Adres MPU6050 zależy od stanu pinu AIN0
  */
 esp_err_t mpu6050_register_read(i2c_master_dev_handle_t dev_handle, mpu6050_reg_addr reg_addr, uint8_t *data, size_t len)
 {
@@ -26,7 +33,7 @@ esp_err_t mpu6050_register_read(i2c_master_dev_handle_t dev_handle, mpu6050_reg_
 }
 
 /**
- * @brief Write a byte to a MPU9250 sensor register
+ * @note Adres MPU6050 zależy od stanu pinu AIN0
  */
 esp_err_t mpu6050_register_write(i2c_master_dev_handle_t dev_handle, mpu6050_reg_addr reg_addr, uint8_t data)
 {
