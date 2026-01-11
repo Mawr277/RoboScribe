@@ -1,8 +1,5 @@
 #include <stdio.h>
-#include "freertos\FreeRTOS.h"
-#include "driver/ledc.h"
-#include "esp_err.h"
-
+#include "freertos/FreeRTOS.h"
 #include "servo.h"
 
 #define LEDC_TIMER              LEDC_TIMER_0
