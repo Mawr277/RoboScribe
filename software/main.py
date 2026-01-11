@@ -1,11 +1,4 @@
-"""
-@file main.py
-@brief Główny moduł konwersji SVG do G-code
-@details Konwertuje elementy SVG (prostokąty, okręgi, elipsy, linie, ścieżki) 
-         na sekwencje poleceń G-code dla urządzeń CNC/maszyn rysujących.
-@author RoboScribe
-@version 1.0
-"""
+## @file main.py
 
 from svgelements import SVG, Rect, Circle, Ellipse, Line, SimpleLine, Polyline, Polygon, Text
 import numpy as np
@@ -22,7 +15,7 @@ Rozdzielczosc = 1
 
 # ---- wczytanie SVG ----
 ## @brief Wczytana zawartość pliku SVG
-svg = SVG.parse("output_path_arial.svg")
+svg = SVG.parse("software\\test\\output_times.svg")
 
 ## @brief Lista poleceń G-code do zapisania do pliku
 gcode_wyjsciowy = []
@@ -192,7 +185,7 @@ for element in svg.elements():
 #TODO: zamiana współrzędnych X Y na kąty dla serwomechanizmów rysujących
 
 # ---- zapis ----
-with open("rysunek.gcode", "w") as f:
+with open("software\\test\\rysunek.gcode", "w") as f:
     f.write("\n".join(gcode_wyjsciowy))
 
 print("Gotowe! Wygenerowano plik rysunek.gcode")
