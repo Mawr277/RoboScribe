@@ -1,53 +1,60 @@
 # pip install numpy Pillow svgwrite fonttools
-import numpy as np
 from PIL import ImageFont
 import svgwrite
 from fontTools.ttLib import TTFont
 from fontTools.pens.svgPathPen import SVGPathPen
 import os
 
+# STAŁE
+FONT_SIZE = 100
+MIN_FONT_SIZE = 20
+COLOR = (255, 255, 255) # Białe wypełnienie
+OUTLINE_COLOR = (0, 0, 0) # Czarny obrys
+STROKE_WIDTH = 2 
+START_X = 50
+START_Y = 150
+
 def text_mode_paths(imageW, imageH, text, svg_filename="output.svg", font_name="arial.ttf"):
     
-    # Parametry czcionki
-    font_size = 100
-    min_font_size = 20
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    output_dir = os.path.join(script_dir, "tests")
+    font_path = os.path.join(script_dir, font_name)
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    full_output_path = os.path.join(output_dir, svg_filename)
+
+    font_size = FONT_SIZE
 
     # Sprawdzenie i ładowanie czcionki
     try:
-        pil_font = ImageFont.truetype(font_name, font_size)
+        pil_font = ImageFont.truetype(font_path, FONT_SIZE)
     except IOError:
-        print(f"Błąd ładowania czcionki '{font_name}'. Użycie domyślnej 'arial.ttf'.")
-        font_name = 'arial.ttf'
-        pil_font = ImageFont.truetype(font_name, font_size)
+        print(f"Błąd ładowania czcionki '{font_path}'. Użycie domyślnej 'arial.ttf'.")
+        font_path = os.path.join(script_dir, "Arial.ttf")
+        pil_font = ImageFont.truetype(font_path, FONT_SIZE)
 
     # Ładowanie czcionki przez FontTools (do wyciągania krzywych/ścieżek)
     try:
-        tt_font = TTFont(font_name)
+        tt_font = TTFont(font_path)
         glyph_set = tt_font.getGlyphSet()
         cmap = tt_font.getBestCmap() 
         units_per_em = tt_font['head'].unitsPerEm 
     except Exception as e:
         print(f"Nie udało się załadować FontTools: {e}")
-        return
+        return False
 
-    # Pozycja startowa tekstu
-    start_x, y = 50, 150
-    x = start_x
+    x = START_X
+    y = START_Y
     
-    # Parametry graficzne
-    color = (255, 255, 255) # Białe wypełnienie
-    outline_color = (0, 0, 0) # Czarny obrys
-    stroke_width = 2 
-
-
-    dwg = svgwrite.Drawing(svg_filename, size=(imageW, imageH))
+    dwg = svgwrite.Drawing(full_output_path, size=(imageW, imageH))
 
     #dopasowanie rozmiaru
     words = text.split(" ")
-    space_width = pil_font.getbbox(" ")[2] - pil_font.getbbox(" ")[0]
-
-    while font_size >= min_font_size:
-        pil_font = ImageFont.truetype(font_name, font_size)
+  
+    while font_size >= MIN_FONT_SIZE:
+        pil_font = ImageFont.truetype(font_path, font_size)
         max_word_width = 0
         space_width = pil_font.getbbox(" ")[2] - pil_font.getbbox(" ")[0]
 
@@ -56,13 +63,13 @@ def text_mode_paths(imageW, imageH, text, svg_filename="output.svg", font_name="
             if word_width > max_word_width:
                 max_word_width = word_width
 
-        if word_width <= w - 2 * start_x:
+        if word_width <= imageW  - 2 * START_X:
             break
         
         font_size -= 2
 
     # Aktualizacja parametrów
-    pil_font = ImageFont.truetype(font_name, font_size)
+    pil_font = ImageFont.truetype(font_path, font_size)
     line_height = font_size * 1.2
     space_width = pil_font.getbbox(" ")[2] - pil_font.getbbox(" ")[0]
     
@@ -70,22 +77,20 @@ def text_mode_paths(imageW, imageH, text, svg_filename="output.svg", font_name="
     scale_factor = font_size / units_per_em
 
     for word in words:
-        # Szerokość słowa
         word_width = sum(pil_font.getbbox(c)[2] - pil_font.getbbox(c)[0] for c in word) + space_width
 
         # Nowa linia, jeżeli się nie mieści
-        if x + word_width > w - start_x:
-            x = start_x
+        if x + word_width > imageW - START_X:
+            x = START_X
             y += line_height
 
         # Rysowanie słowa znak po znaku jako PATH
         for char in word + " ":
-            # 1. Obliczamy szerokość znaku w PIL, żeby wiedzieć, gdzie przesunąć kursor
+            #Obliczamy szerokość znaku
             bbox = pil_font.getbbox(char)
-            letter_width = bbox[2] - bbox[0] if bbox else space_width # obsługa spacji
+            letter_width = bbox[2] - bbox[0] if bbox else space_width 
 
-            # 2. Pobieramy kształt (path) z FontTools
-            # Spacja zazwyczaj nie ma kształtu, więc ją pomijamy w rysowaniu, ale przesuwamy x
+            # Pobieramy kształt (path) z FontTools
             glyph_name = cmap.get(ord(char))
             
             if glyph_name and char.strip(): # Jeśli znak istnieje i nie jest pusty
@@ -99,9 +104,9 @@ def text_mode_paths(imageW, imageH, text, svg_filename="output.svg", font_name="
                     
                     grp.add(dwg.path(
                         d=path_data,
-                        fill=svgwrite.rgb(*color),
-                        stroke=svgwrite.rgb(*outline_color),
-                        stroke_width=stroke_width / scale_factor
+                        fill=svgwrite.rgb(*COLOR),
+                        stroke=svgwrite.rgb(*OUTLINE_COLOR),
+                        stroke_width=STROKE_WIDTH / scale_factor
                     ))
                     dwg.add(grp)
                     
@@ -110,11 +115,16 @@ def text_mode_paths(imageW, imageH, text, svg_filename="output.svg", font_name="
 
             x += letter_width
 
-    dwg.save()
-    print(f"SVG (jako krzywe) zapisano jako {svg_filename}")
+    try:
+        dwg.save()
+        print(f"SVG zapisano jako {full_output_path}")
+        return True 
+    except Exception as e:
+        print(f"Nie udało się zapisać pliku SVG: {e}")
+        return False 
 
 
-#Uruchomienie
+#Uruchomienie placeholder
 h, w = (1000, 1000)
-text_mode_paths(w,h, "aąęść źżół path test", svg_filename="output_path_arial.svg", font_name="arial.ttf")
+text_mode_paths(w,h, "aąęść źżół path test", svg_filename="output_path_arial.svg", font_name="Arial.ttf")
 text_mode_paths(w,h, "aąęść źżół path test", svg_filename="output_path_times.svg", font_name="Times New Roman.ttf")
