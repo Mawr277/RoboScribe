@@ -3,6 +3,11 @@
 **/.devcontainer
 /datasheets
 /documents
+.directory
+
+# Documentation (with doxygen)
+/docs/html
+/docs/latex
 
 # Firmware
 **/.clangd

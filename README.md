@@ -1,2 +1,2 @@
-# RoboScribe
-Robot Scribe for writing and drawing on magnetic whiteboard
+# RoboScribe - Robot Skryba
+Robot do pisania po tablicy magnetycznej
