@@ -15,16 +15,18 @@ Rozdzielczosc = 1
 
 # ---- wczytanie SVG ----
 ## @brief Wczytana zawartość pliku SVG
-svg = SVG.parse("software\\test\\output_times.svg")
+svg = SVG.parse("software/test/output_path_arial.svg")
 
 ## @brief Lista poleceń G-code do zapisania do pliku
 gcode_wyjsciowy = []
 
+##
+# @brief Przetwarza ścieżkę na zbiór punktów z zadaną rozdzielczością
+# @param path Obiekt ścieżki SVG do próbkowania
+# @param rozdzielczosc Maksymalna odległość między sąsiednimi punktami
+# @return Lista krotek (x, y) reprezentujących punkty próbkowania
 def probkowanie(path, rozdzielczosc):
-    ## @brief Przetwarza ścieżkę na zbiór punktów z zadaną rozdzielczością
-    ## @param path Obiekt ścieżki SVG do próbkowania
-    ## @param rozdzielczosc Maksymalna odległość między sąsiednimi punktami
-    ## @return Lista krotek (x, y) reprezentujących punkty próbkowania
+    
     punkty = []
     dlugosc_sciezki = path.length()
     #TODO: rozważyć jak ma działać rozdzielczość
@@ -35,14 +37,14 @@ def probkowanie(path, rozdzielczosc):
         p = path.point(i / n)
         punkty.append((p.real, p.imag))
     return punkty
-
+## @brief Przetwarza element prostokąta
+# @details Generuje listę punktów narożników prostokąta w kolejności: lewy-górny → prawy-górny → prawy-dolny → lewy-dolny → zamknięcie
+# @param element Obiekt Rect z biblioteki svgelements
+# @return Lista krotek (x, y) reprezentujących narożniki prostokąta
+# @note TODO: uwzględnić zaokrąglone narożniki w przyszłości
 
 def przetwarzaj_rect(element):
-    ## @brief Przetwarza element prostokąta
-    ## @details Generuje listę punktów narożników prostokąta w kolejności: lewy-górny → prawy-górny → prawy-dolny → lewy-dolny → zamknięcie
-    ## @param element Obiekt Rect z biblioteki svgelements
-    ## @return Lista krotek (x, y) reprezentujących narożniki prostokąta
-    ## @note TODO: uwzględnić zaokrąglone narożniki w przyszłości
+    
     #TODO:uwzględnić zaokrąglone narożniki w przyszłości
     x = element.x or 0
     y = element.y or 0
@@ -59,11 +61,12 @@ def przetwarzaj_rect(element):
     ]
     return punkty
 
+## @brief Przetwarza element koła
+# @details Generuje punkty rozmieszczone równomiernie na obwodzie koła
+# @param element Obiekt Circle z biblioteki svgelements
+# @return Lista krotek (x, y) reprezentujących punkty na okręgu
 def przetwarzaj_circle(element):
-    ## @brief Przetwarza element koła
-    ## @details Generuje punkty rozmieszczone równomiernie na obwodzie koła
-    ## @param element Obiekt Circle z biblioteki svgelements
-    ## @return Lista krotek (x, y) reprezentujących punkty na okręgu
+   
     cx = element.cx or 0
     cy = element.cy or 0
     r = element.r or 0
@@ -79,12 +82,12 @@ def przetwarzaj_circle(element):
         punkty.append((x, y))
     
     return punkty
-
+## @brief Przetwarza element elipsy
+# @details Generuje punkty rozmieszczone równomiernie na obwodzie elipsy
+# @param element Obiekt Ellipse z biblioteki svgelements
+# @return Lista krotek (x, y) reprezentujących punkty na elipsie
 def przetwarzaj_ellipse(element):
-    ## @brief Przetwarza element elipsy
-    ## @details Generuje punkty rozmieszczone równomiernie na obwodzie elipsy
-    ## @param element Obiekt Ellipse z biblioteki svgelements
-    ## @return Lista krotek (x, y) reprezentujących punkty na elipsie
+    
     cx = element.cx or 0
     cy = element.cy or 0
     rx = element.rx or 0
@@ -102,30 +105,34 @@ def przetwarzaj_ellipse(element):
     
     return punkty
 
+## @brief Przetwarza element linii prostej
+# @param element Obiekt Line lub SimpleLine
+# @return Lista dwóch krotek (x1, y1) i (x2, y2) reprezentujących końce linii
+
 def przetwarzaj_line(element):
-    ## @brief Przetwarza element linii prostej
-    ## @param element Obiekt Line lub SimpleLine
-    ## @return Lista dwóch krotek (x1, y1) i (x2, y2) reprezentujących końce linii
+
     x1 = element.x1 or 0
     y1 = element.y1 or 0
     x2 = element.x2 or 0
     y2 = element.y2 or 0
     
     return [(x1, y1), (x2, y2)]
-
+ 
+## @brief Przetwarza element polilinii (otwartej)
+# @param element Obiekt Polyline z biblioteki svgelements
+# @return Lista krotek (x, y) reprezentujących wierzchołki polilinii
 def przetwarzaj_polyline(element):
-    ## @brief Przetwarza element polilinii (otwartej)
-    ## @param element Obiekt Polyline z biblioteki svgelements
-    ## @return Lista krotek (x, y) reprezentujących wierzchołki polilinii
+   
     if hasattr(element, 'points') and element.points:
         return list(element.points)
     return []
 
+## @brief Przetwarza element wielokąta (zamknięty)
+# @details Automatycznie zamyka wielokąt łącząc ostatni punkt z pierwszym
+# @param element Obiekt Polygon z biblioteki svgelements
+# @return Lista krotek (x, y) reprezentujących wierzchołki wielokąta (zamknięty)
 def przetwarzaj_polygon(element):
-    ## @brief Przetwarza element wielokąta (zamknięty)
-    ## @details Automatycznie zamyka wielokąt łącząc ostatni punkt z pierwszym
-    ## @param element Obiekt Polygon z biblioteki svgelements
-    ## @return Lista krotek (x, y) reprezentujących wierzchołki wielokąta (zamknięty)
+    
     if hasattr(element, 'points') and element.points:
         punkty = list(element.points)
         if punkty and punkty[0] != punkty[-1]:
@@ -133,11 +140,13 @@ def przetwarzaj_polygon(element):
         return punkty
     return []
 
+## @brief Generuje polecenia G-code dla listy punktów
+# @details Tworzy sekwencję poleceń: G0 (szybki ruch), G1 (ruch z rysowaniem), G0 Z1 (podniesienie)
+# @param punkty Lista krotek (x, y) reprezentujących współrzędne do narysowania
+# @return void (modyfikuje globalną listę gcode_wyjsciowy)
+
 def generuj_gcode_dla_punktow(punkty):
-    ## @brief Generuje polecenia G-code dla listy punktów
-    ## @details Tworzy sekwencję poleceń: G0 (szybki ruch), G1 (ruch z rysowaniem), G0 Z1 (podniesienie)
-    ## @param punkty Lista krotek (x, y) reprezentujących współrzędne do narysowania
-    ## @return void (modyfikuje globalną listę gcode_wyjsciowy)
+    
     if not punkty:
         return
     
@@ -185,7 +194,7 @@ for element in svg.elements():
 #TODO: zamiana współrzędnych X Y na kąty dla serwomechanizmów rysujących
 
 # ---- zapis ----
-with open("software\\test\\rysunek.gcode", "w") as f:
+with open("software/test/rysunek.gcode", "w") as f:
     f.write("\n".join(gcode_wyjsciowy))
 
 print("Gotowe! Wygenerowano plik rysunek.gcode")

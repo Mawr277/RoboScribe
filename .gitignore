@@ -22,6 +22,7 @@ docs/latex/Makefile
 /datasheets
 /documents
 .directory
+**/venv
 
 # Documentation (with doxygen)
 /docs/html
