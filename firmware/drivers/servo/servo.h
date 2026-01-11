@@ -4,6 +4,7 @@
  * @brief Plik nagłówkowy do obsługi serwomotorów TowerPro MG90S i SG90
  * @version 1.00
  * @date 2026-12-08
+ * @ingroup drivers
  * 
  * @copyright Copyright (c) 2026
  * 

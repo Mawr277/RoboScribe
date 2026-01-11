@@ -5,6 +5,7 @@
  * \n W tym celu stosuje się bibliotekę ledc do generowania sygnałów PWM.
  * @version 1.00
  * @date 2026-12-08
+ * @ingroup drivers
  * 
  * @copyright Copyright (c) 2026
  * 

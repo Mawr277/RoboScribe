@@ -4,6 +4,7 @@
  * @brief Plik nagłówkowy do ułatwionej obsługi akcelerometru MPU6050
  * @version 1.00
  * @date 2026-11-01
+ * @ingroup drivers
  * 
  * @copyright Copyright (c) 2026
  * 

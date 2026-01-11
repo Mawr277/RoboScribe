@@ -5,6 +5,7 @@
  * \n Stosuje standardowe biblioteki esp-idf do obsługi protokołu I2C.
  * @version 1.00
  * @date 2026-11-01
+ * @ingroup drivers
  * 
  * @copyright Copyright (c) 2026
  * 
