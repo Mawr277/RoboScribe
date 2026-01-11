@@ -14,84 +14,103 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QIcon
 from PyQt6.QtSvgWidgets import QSvgWidget
 
+LISTA_CZCIONEK = [
+        ("Arial", "arial.ttf"),
+        ("Times New Roman", "Times New Roman.ttf"),
+    ]
+APP_TITLE = "Roboscribe"
+DEFAULT_WINDOW_SIZE = (1200,1000)
+
 def add_line_edit(parent_layout, label_text, placeholder=""):
-    """
-    Tworzy Label + QLineEdit, układa je w rzędzie i dodaje do parent_layout.
-    Zwraca obiekt QLineEdit, aby można go było przypisać do zmiennej.
-    """
-    # 1. Tworzenie elementów
+    #element typu line_edit
     label = QLabel(label_text)
     line_edit = QLineEdit()
     line_edit.setPlaceholderText(placeholder)
     
-    # 2. Układanie ich obok siebie
     row_layout = QHBoxLayout()
     row_layout.addWidget(label)
     row_layout.addWidget(line_edit)
-    
-    # 3. Dodanie rzędu do głównego pionowego układu
     parent_layout.addLayout(row_layout)
     
-    # 4. WAŻNE: Zwracamy line_edit, żebyś mógł go używać w logice
     return line_edit
 
 def add_combo_box(parent_layout, label_text, items):
+    #element typu combo_box
     label = QLabel(label_text)
     combo = QComboBox()
     for text,data in items:
         combo.addItem(text, data)
 
+    #layour
     row_layout = QHBoxLayout()
     row_layout.addWidget(label)
     row_layout.addWidget(combo)
-
     parent_layout.addLayout(row_layout)
+
     return combo
 
 class MyApp(QWidget):
-    def __init__(self, SvgToText):
+    def __init__(self, function1):
         super().__init__()
 
         # funkcje
-        self.funkcja_logiki = SvgToText
+        self.TextToSVG = function1
 
-        self.init_ui()
+        self.base_path = os.path.dirname(os.path.abspath(__file__))
 
-    def init_ui(self):
+        self.setup_window()
+        self.setup_ui()
 
-        main_layout = QVBoxLayout()
-        
-        #ikona programu
-        folder = os.path.dirname(__file__)
-        icon_dir = os.path.join(folder, 'logo_Roboscribe.png')
-        app.setWindowIcon(QIcon(icon_dir))
+    def setup_window(self):
+        #okno
+        self.setWindowTitle(APP_TITLE)
+        self.resize(*DEFAULT_WINDOW_SIZE)
+
+        #ustawienie ikony programu
+        icon_path = os.path.join(self.base_path, 'logo_Roboscribe.png')
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
+
+    def setup_ui(self):
+        #lewy panel
+        left_widget = self.left_panel()
+
+        #prawy panel
+        self.svg_widget = QSvgWidget()
+        self.svg_widget.setStyleSheet("background-color: #ffffff; border: 1px solid #cccccc;")
+
+        #glowny layout
+        main_layout = QHBoxLayout()
+        main_layout.addWidget(left_widget,1)
+        main_layout.addWidget(self.svg_widget,3)
+        self.setLayout(main_layout)
+
+    def left_panel(self):
+        left_layout = QVBoxLayout()
 
         #pola tekstowe
-        self.text_input = add_line_edit(main_layout, "Tekst:", "np: Roboscribe")
-        self.w_input = add_line_edit(main_layout, "Szerokość:", "np: 300")
-        self.h_input = add_line_edit(main_layout, "Wysokość", "np: 400")
-        self.file_name_input = add_line_edit(main_layout, "Nazwa pliku wyjściowego:" , "np: output.svg")
+        self.text_input = add_line_edit(left_layout, "Tekst:", "np: Roboscribe")
+        self.w_input = add_line_edit(left_layout, "Szerokość:", "np: 300")
+        self.h_input = add_line_edit(left_layout, "Wysokość", "np: 400")
+        self.file_name_input = add_line_edit(left_layout, "Nazwa pliku wyjściowego:" , "np: output.svg")
 
         #font
-        lista_czcionek = [
-            ("Arial", "arial.ttf"),
-            ("Times New Roman", "Times New Roman.ttf"),
-        ]
-        self.font_input = add_combo_box(main_layout, "Czcionka:", lista_czcionek)
+        self.font_input = add_combo_box(left_layout, "Czcionka:", LISTA_CZCIONEK)
 
         #przycisk
-        self.button = QPushButton("generuj")
-        self.button.clicked.connect(self.on_button_click)
-        main_layout.addWidget(self.button)
+        self.button = QPushButton("Generuj")
+        self.button.clicked.connect(self.on_generate_click)
+        left_layout.addWidget(self.button)
+
+        #layout
+        left_layout.addStretch() 
+        left_container = QWidget()
+        left_container.setLayout(left_layout)
+        left_container.setMaximumWidth(300)
+        return left_container
 
 
-
-        self.setLayout(main_layout)
-        #okno
-        self.setWindowTitle("Roboscribe")
-        self.setGeometry(300, 300, 400, 200)
-
-    def on_button_click(self):
+    def on_generate_click(self):
 
         # Pobranie danych z pól
         text = self.text_input.text()
@@ -101,28 +120,32 @@ class MyApp(QWidget):
         raw_name = self.file_name_input.text().strip()
 
         if not raw_name: 
-            raw_name = "output" # Domyślna nazwa jak nic nie wpisano
+            raw_name = "output" #domyślna nazwa
             
         if not raw_name.lower().endswith(".svg"):
             file_name = raw_name + ".svg"
         else:
             file_name = raw_name
 
+        full_path = os.path.join(self.base_path, file_name)
+
         #placeholder
-        # Przykładowa logika
-        print("Tekst:", text)
-        print("w:", w)
-        print("h:", h)
-        print("font:", czcionka)
-        print("nazwa pliku:", file_name)
-        wynik = self.funkcja_logiki(text,w,h, czcionka, file_name)
+        wynik = self.TextToSVG(text,w,h, czcionka, file_name)
 
         # Opcjonalnie: wypisujemy wynik, jeśli logika coś zwróciła
         if wynik:
              print("GUI: Otrzymano wynik z funkcji:", wynik)
+        
+        #trzeba zmienic placeholder (output_arial2.svg na file_name)
+        if os.path.exists(full_path):
+            self.svg_widget.load(full_path)
+        else:
+            print(f"Błąd: Plik {file_name} nie został znaleziony.")
+
+    
 
 
-# --- Testowanie tego pliku ---
+# --- Testowanie tego pliku --- tez placeholder
 if __name__ == "__main__":
     myappid = 'roboscribe.gui'
 
