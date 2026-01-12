@@ -1,12 +1,15 @@
 ## @file main.py
 
-from svgelements import SVG, Rect, Circle, Ellipse, Line, SimpleLine, Polyline, Polygon, Text
+from svgelements import SVG, Rect, Circle, Ellipse, Line, SimpleLine, Polyline, Polygon, Text, Group
 import numpy as np
 import math
 
 # ---- konfiguracja ----
 ## @brief Skala konwersji współrzędnych SVG na jednostki G-code
 skala = 1.0
+L1 = 70.0   
+L2 = 70.0
+Rmax = L1 + L2
 
 ## @brief Rozdzielczość próbkowania - maksymalna odległość między punktami
 Rozdzielczosc = 1 
@@ -40,7 +43,7 @@ def probkowanie(path, rozdzielczosc):
 ## @brief Przetwarza element prostokąta
 # @details Generuje listę punktów narożników prostokąta w kolejności: lewy-górny → prawy-górny → prawy-dolny → lewy-dolny → zamknięcie
 # @param element Obiekt Rect z biblioteki svgelements
-# @return Lista krotek (x, y) reprezentujących narożniki prostokąta
+# @return Lista kropek (x, y) reprezentujących narożniki prostokąta
 # @note TODO: uwzględnić zaokrąglone narożniki w przyszłości
 
 def przetwarzaj_rect(element):
@@ -120,7 +123,7 @@ def przetwarzaj_line(element):
  
 ## @brief Przetwarza element polilinii (otwartej)
 # @param element Obiekt Polyline z biblioteki svgelements
-# @return Lista krotek (x, y) reprezentujących wierzchołki polilinii
+# @return Lista krotek (x, y) reprezentujących wierzchołki linii
 def przetwarzaj_polyline(element):
    
     if hasattr(element, 'points') and element.points:
@@ -140,34 +143,62 @@ def przetwarzaj_polygon(element):
         return punkty
     return []
 
-## @brief Generuje polecenia G-code dla listy punktów
-# @details Tworzy sekwencję poleceń: G0 (szybki ruch), G1 (ruch z rysowaniem), G0 Z1 (podniesienie)
-# @param punkty Lista krotek (x, y) reprezentujących współrzędne do narysowania
+
+
+        
+def bounding_box(punkty):
+    xs = [p[0] for p in punkty]
+    ys = [p[1] for p in punkty]
+    return min(xs), max(xs), min(ys), max(ys)
+
+        
+def wyznacz_baze_robota(punkty, margines=20):
+    xmin, xmax, ymin, ymax = bounding_box(punkty)
+
+    Bx = (xmin + xmax) / 2
+    By = ymin - margines   # ZA elementem
+
+    return Bx, By
+
+        
+def do_ukladu_lokalnego(x, y, Bx, By):
+    return x - Bx, y - By
+        
+def kinematyka_odwrotna(x, y):
+    d = math.sqrt(x*x + y*y)
+
+    if d > Rmax or d < abs(L1 - L2):
+        return None
+
+    alpha = math.acos((L1**2 + L2**2 - d**2) / (2*L1*L2))
+    theta2 = math.pi - alpha
+
+    beta = math.atan2(y, x)
+    gamma = math.acos((L1**2 + d**2 - L2**2) / (2*L1*d))
+    theta1 = beta - gamma
+
+    t1 = math.degrees(theta1)
+    t2 = math.degrees(theta2)
+
+    if not (0 <= t1 <= 180 and 0 <= t2 <= 180):
+        return None
+
+    return t1, t2
+
+## @brief Rekurencyjnie przetwarza element SVG, w tym grupy
+# @details Obsługuje zarówno pojedyncze elementy jak i grupy zawierające inne elementy
+# @param element Element SVG do przetworzenia
 # @return void (modyfikuje globalną listę gcode_wyjsciowy)
-
-def generuj_gcode_dla_punktow(punkty):
+def przetwarzaj_element(element):
     
-    if not punkty:
-        return
-    
-    # Przejście do pierwszego punktu bez rysowania
-    x0, y0 = punkty[0]
-    x_val = round(x0 * skala, 2)
-    y_val = round(y0 * skala, 2)
-    gcode_wyjsciowy.append(f"G0 X{x_val} Y{y_val}")
-    
-    gcode_wyjsciowy.append('G0 Z0')  # Opuszczenie pisaka
-    
-    # Rysowanie pozostałych punktów
-    for x, y in punkty[1:]:
-        x_val = round(x * skala, 2)
-        y_val = round(y * skala, 2)
-        gcode_wyjsciowy.append(f"G1 X{x_val} Y{y_val}")
-
-for element in svg.elements():
     punkty = []
     
-    if hasattr(element, "d"):  # element ma ścieżkę (Path)
+    if isinstance(element, Group):
+        # Rekurencyjnie przetwarzaj elementy w grupie
+        for child in element:
+            przetwarzaj_element(child)
+        return
+    elif hasattr(element, "d"):  # element ma ścieżkę (Path)
         punkty = probkowanie(element, Rozdzielczosc)
     elif isinstance(element, Rect):
         punkty = przetwarzaj_rect(element)
@@ -179,19 +210,52 @@ for element in svg.elements():
         punkty = przetwarzaj_line(element)
     elif isinstance(element, Polyline):
         punkty = przetwarzaj_polyline(element)
+    elif isinstance(element, Text):
+        print(f"Nieobsługiwany element: {type(element)} - przekonwertuj tekst na ścieżkę w edytorze SVG.")
+        return
+
     elif isinstance(element, Polygon):
         punkty = przetwarzaj_polygon(element)
-    elif isinstance(element, Text):
-         print(f"Nieobsługiwany element: {type(element)} - przekonwertuj tekst na ścieżkę w edytorze SVG.")
+
     else:
         print(f"Nieobsługiwany element: {type(element)}")
-        continue
-    
-    generuj_gcode_dla_punktow(punkty)
-    if punkty:
-        gcode_wyjsciowy.append("G0 Z1")  # Podniesienie pisaka po zakończeniu kształtu
+        return
 
-#TODO: zamiana współrzędnych X Y na kąty dla serwomechanizmów rysujących
+
+    if not punkty:
+        print(f"lista punktów jest pusta dla elementu: {type(element)}")
+        return
+
+    
+    if not punkty:
+        print(f"lista punktów jest pusta dla elementu: {type(element)}")
+        return
+    
+    Bx, By = wyznacz_baze_robota(punkty)
+
+    
+    gcode_wyjsciowy.append(f"G0 X{Bx:.2f} Y{By:.2f}")  # przejazd robota
+    
+    for i, (x, y) in enumerate(punkty):
+        xl, yl = do_ukladu_lokalnego(x, y, Bx, By)
+        ik = kinematyka_odwrotna(xl, yl)
+
+        if ik is None:
+            continue
+
+        t1, t2 = ik
+
+        if i == 0:
+            gcode_wyjsciowy.append("G0 Z0")  # opuszczenie pisaka
+
+        gcode_wyjsciowy.append(f"M1 T1={t1:.2f} T2={t2:.2f}")
+
+    gcode_wyjsciowy.append("G0 Z1")  # podniesienie pisaka
+
+for element in svg.elements():
+    przetwarzaj_element(element)
+
+
 
 # ---- zapis ----
 with open("software/test/rysunek.gcode", "w") as f:
