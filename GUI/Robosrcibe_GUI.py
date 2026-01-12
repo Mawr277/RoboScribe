@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QComboBox,
 )
-from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QIcon, QIntValidator
 from PyQt6.QtSvgWidgets import QSvgWidget
 
 LISTA_CZCIONEK = [
@@ -94,6 +94,9 @@ class MyApp(QWidget):
         self.h_input = add_line_edit(left_layout, "Wysokość", "np: 400")
         self.file_name_input = add_line_edit(left_layout, "Nazwa pliku wyjściowego:" , "np: output.svg")
 
+        validator = QIntValidator(1, 9999, self)
+        self.w_input.setValidator(validator)
+        self.h_input.setValidator(validator)
         #font
         self.font_input = add_combo_box(left_layout, "Czcionka:", LISTA_CZCIONEK)
 
@@ -114,10 +117,13 @@ class MyApp(QWidget):
 
         # Pobranie danych z pól
         text = self.text_input.text()
-        w = self.w_input.text()
-        h = self.h_input.text()
+        raw_w = self.w_input.text()
+        raw_h = self.h_input.text()
         czcionka = self.font_input.currentData()
         raw_name = self.file_name_input.text().strip()
+
+        w = int(raw_w) if raw_w else 0
+        h = int(raw_h) if raw_h else 0
 
         if not raw_name: 
             raw_name = "output" #domyślna nazwa
