@@ -1,0 +1,17 @@
+# General
+**/.vscode
+**/.devcontainer
+/datasheets
+/documents
+.directory
+
+# Documentation (with doxygen)
+/docs/html
+/docs/latex
+
+# Firmware
+**/.clangd
+**/build/
+**/sdkconfig
+**/sdkconfig.old
+# Temporary
