@@ -123,8 +123,3 @@ def text_mode_paths(imageW, imageH, text, svg_filename="output.svg", font_name="
         print(f"Nie udało się zapisać pliku SVG: {e}")
         return False 
 
-
-#Uruchomienie placeholder
-h, w = (1000, 1000)
-text_mode_paths(w,h, "aąęść źżół path test", svg_filename="output_path_arial.svg", font_name="Arial.ttf")
-text_mode_paths(w,h, "aąęść źżół path test", svg_filename="output_path_times.svg", font_name="Times New Roman.ttf")
