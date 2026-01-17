@@ -34,3 +34,4 @@ docs/latex/Makefile
 **/sdkconfig
 **/sdkconfig.old
 # Temporary
+/software/__pycache__
