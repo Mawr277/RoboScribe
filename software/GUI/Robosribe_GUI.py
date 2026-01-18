@@ -19,7 +19,20 @@ LISTA_CZCIONEK = [
         ("Times New Roman", "Times New Roman.ttf"),
     ]
 APP_TITLE = "Roboscribe"
+APP_ID = 'roboscribe.gui'
 DEFAULT_WINDOW_SIZE = (1200,1000)
+
+def launch_app(Create_SVG_logic, Create_GCODE_logic):
+    myappid = APP_ID
+    app = QApplication(sys.argv)
+    try:
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+    except ImportError:
+        pass 
+    window = MyApp(Create_SVG_logic, Create_GCODE_logic)
+    window.show()
+    sys.exit(app.exec())
+
 
 def add_line_edit(parent_layout, label_text, placeholder=""):
     #element typu line_edit
@@ -56,7 +69,6 @@ def add_button(parent_layout,text, callback):
 
     return button
     
-
 class MyApp(QWidget):
     def __init__(self, function1, function2):
         super().__init__()
@@ -96,20 +108,20 @@ class MyApp(QWidget):
     def left_panel(self):
         left_layout = QVBoxLayout()
 
-        #pola tekstowe
+        #pola do czesci SVG
         self.text_input = add_line_edit(left_layout, "Tekst:", "np: Roboscribe")
         self.w_input = add_line_edit(left_layout, "Szerokość:", "np: 300")
         self.h_input = add_line_edit(left_layout, "Wysokość", "np: 400")
         self.file_name_input = add_line_edit(left_layout, "Nazwa pliku wyjściowego:" , "np: output.svg")
-
-        validator = QIntValidator(1, 9999, self)
+        validator = QIntValidator(100, 9999, self)
         self.w_input.setValidator(validator)
         self.h_input.setValidator(validator)
-        #font
         self.font_input = add_combo_box(left_layout, "Czcionka:", LISTA_CZCIONEK)
-
-        #przycisk
         self.Gen_SVG_button = add_button(left_layout, "Generuj podgląd",self.on_Gen_SVG_button_click)
+
+        #pola do czesci GCODE
+        self.scale = add_line_edit(left_layout,"Skala", "np:1")
+        self.resolution = add_line_edit(left_layout,"Rozdzielczość", "np: 1")
         self.Gen_GCODE_button = add_button(left_layout, "Generuj GCODE", self.on_Gen_GCODE_button_click)
 
         #layout
@@ -155,45 +167,15 @@ class MyApp(QWidget):
         else:
             print(f"Błąd: Plik {file_name} nie został znaleziony.")
 
+        return full_path
+
     def on_Gen_GCODE_button_click(self):
-        self.on_Gen_SVG_button_click()
-        #tutaj dodac funkcje ciabrosa ktora jest hardcoded ze sciezka
-
-
-    
-#placeholder cale w dol
-current_dir = os.path.dirname(os.path.abspath(__file__))
-external_module_path = os.path.abspath(os.path.join(current_dir, '..', 'TextToSvg'))
-if external_module_path not in sys.path:
-    sys.path.append(external_module_path)
-
-try:
-    from TextToSvg import text_mode_paths
-except ImportError as e:
-    print(f"Błąd importu: {e}. Sprawdź czy plik TextToSvg.py istnieje w {external_module_path}")
-    # Tworzymy funkcję zastępczą, żeby GUI się nie wywaliło od razu przy starcie
-    def text_mode_paths(*args, **kwargs):
-        print("Funkcja nie została zaimportowana poprawnie.")
-        return False
-
-
-if __name__ == "__main__":
-    myappid = 'roboscribe.gui'
-
-    app = QApplication(sys.argv)
-
-    try:
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-    except ImportError:
-        pass # Ignorujemy, jeśli to nie Windows
-    
-    #placeholder do sprawdzenia czy dziala
-    def placeholder_svg_to_gcode(t, w, h, font_name="arial.ttf", file_name= "output.svg"):
-        print(f"--- LOGIKA (TEST): Dostałem {t}, wymiary {w}x{h} ---, font_name {font_name}, file_name = {file_name}")
-        return "Gotowy SVG"
-
-    # Przekazujemy tę funkcję do okna
-    window = MyApp(text_mode_paths, placeholder_svg_to_gcode)
-    
-    window.show()
-    sys.exit(app.exec())
+        path_to_svg = self.on_Gen_SVG_button_click()
+        if not path_to_svg:
+            print("Nie można wygenerować GCODE - błąd pliku SVG.")
+            return
+        path_to_gcode = path_to_svg.replace(".svg", ".gcode")
+        try:
+            self.SVGToGcode(path_to_svg, path_to_gcode)
+        except Exception as e:
+            print(f"Wystąpił błąd podczas konwersji: {e}")
