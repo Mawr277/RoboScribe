@@ -1,4 +1,4 @@
-## @file main.py
+## @file 
 import argparse
 from svgelements import SVG, Rect, Circle, Ellipse, Line, SimpleLine, Polyline, Polygon, Text, Group
 import numpy as np

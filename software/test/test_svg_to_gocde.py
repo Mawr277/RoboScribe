@@ -1,8 +1,8 @@
 # run_conversion.py
 
-# 1. Zaimportuj funkcję 'convert_svg_to_gcode' z pliku 'main.py'.
-#    Ponieważ oba pliki są w tym samym folderze, wystarczy prosta instrukcja importu.
-from main import convert_svg_to_gcode
+# 1. Zaimportuj funkcję 'convert_svg_to_gcode' z pliku 'svg_to_gcode.py' muszą być w tym samym folderze!.
+#    
+from svg_to_gcode import convert_svg_to_gcode
 
 
 # 2. Zdefiniuj ścieżki i parametry dla nowego zadania.
