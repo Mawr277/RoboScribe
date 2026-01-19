@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QComboBox,
+    QFileDialog, 
 )
 from PyQt6.QtGui import QIcon, QIntValidator
 from PyQt6.QtSvgWidgets import QSvgWidget
@@ -25,10 +26,12 @@ DEFAULT_WINDOW_SIZE = (1200,1000)
 def launch_app(Create_SVG_logic, Create_GCODE_logic):
     myappid = APP_ID
     app = QApplication(sys.argv)
+
     try:
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except ImportError:
         pass 
+
     window = MyApp(Create_SVG_logic, Create_GCODE_logic)
     window.show()
     sys.exit(app.exec())
@@ -54,7 +57,7 @@ def add_combo_box(parent_layout, label_text, items):
     for text,data in items:
         combo.addItem(text, data)
 
-    #layour
+    #layout
     row_layout = QHBoxLayout()
     row_layout.addWidget(label)
     row_layout.addWidget(combo)
@@ -68,15 +71,35 @@ def add_button(parent_layout,text, callback):
     parent_layout.addWidget(button)
 
     return button
+
+
+def add_folder_selection(parent_layout, label_text, initial_path, button_text, callback):
+    label = QLabel(label_text)
+    line_edit = QLineEdit(initial_path)
+    line_edit.setReadOnly(True) 
+    parent_layout.addWidget(label)
+    parent_layout.addWidget(line_edit)
+    add_button(parent_layout, button_text, callback)
+    line = QLabel("<hr>")
+    parent_layout.addWidget(line)
     
+    return line_edit
+
+
 class MyApp(QWidget):
     def __init__(self, function1, function2):
         super().__init__()
 
         # funkcje
         self.TextToSVG = function1
-        self.SVGToGcode = function2 #funkcja ciabrosa
+        self.SVGToGcode = function2 
+
         self.base_path = os.path.dirname(os.path.abspath(__file__))
+
+        test_folder_path = os.path.join(self.base_path, "test")
+        if not os.path.exists(test_folder_path):
+            os.makedirs(test_folder_path)
+        self.working_directory = test_folder_path
 
         self.setup_window()
         self.setup_ui()
@@ -107,30 +130,50 @@ class MyApp(QWidget):
 
     def left_panel(self):
         left_layout = QVBoxLayout()
+        
+        #sciezka zapisu
+        self.folder_display = add_folder_selection(
+            parent_layout=left_layout,
+            label_text="Folder zapisu:",
+            initial_path=self.working_directory,
+            button_text="Zmień folder zapisu...",
+            callback=self.select_working_folder
+        )
 
         #pola do czesci SVG
+        validator_size = QIntValidator(100, 9999, self)
+        
         self.text_input = add_line_edit(left_layout, "Tekst:", "np: Roboscribe")
         self.w_input = add_line_edit(left_layout, "Szerokość:", "np: 300")
         self.h_input = add_line_edit(left_layout, "Wysokość", "np: 400")
         self.file_name_input = add_line_edit(left_layout, "Nazwa pliku wyjściowego:" , "np: output.svg")
-        validator = QIntValidator(100, 9999, self)
-        self.w_input.setValidator(validator)
-        self.h_input.setValidator(validator)
         self.font_input = add_combo_box(left_layout, "Czcionka:", LISTA_CZCIONEK)
         self.Gen_SVG_button = add_button(left_layout, "Generuj podgląd",self.on_Gen_SVG_button_click)
 
+        self.w_input.setValidator(validator_size)
+        self.h_input.setValidator(validator_size)
+
         #pola do czesci GCODE
+        validator_gcode = QIntValidator(1,10)
         self.scale = add_line_edit(left_layout,"Skala", "np:1")
         self.resolution = add_line_edit(left_layout,"Rozdzielczość", "np: 1")
         self.Gen_GCODE_button = add_button(left_layout, "Generuj GCODE", self.on_Gen_GCODE_button_click)
 
+        self.scale.setValidator(validator_gcode)
+        self.resolution.setValidator(validator_gcode)
+        
         #layout
         left_layout.addStretch() 
         left_container = QWidget()
         left_container.setLayout(left_layout)
-        left_container.setMaximumWidth(300)
+        left_container.setMaximumWidth(400)
         return left_container
 
+    def select_working_folder(self):
+        folder = QFileDialog.getExistingDirectory(self, "Wybierz folder zapisu", self.working_directory)
+        if folder:
+            self.working_directory = folder
+            self.folder_display.setText(folder) 
 
     def on_Gen_SVG_button_click(self):
 
@@ -152,30 +195,30 @@ class MyApp(QWidget):
         else:
             file_name = raw_name
 
-        tests_dir = os.path.abspath(os.path.join(self.base_path, '..', 'TextToSvg', 'tests'))
+        full_path = os.path.join(self.working_directory, file_name)
 
-        if not os.path.exists(tests_dir):
-            os.makedirs(tests_dir)
+        self.TextToSVG(w,h, text,full_path,czcionka)
 
-        full_path = os.path.join(tests_dir, file_name)
-
-        self.TextToSVG(w,h, text,file_name,czcionka)
-
-        #trzeba zmienic placeholder (output_arial2.svg na file_name)
         if os.path.exists(full_path):
             self.svg_widget.load(full_path)
         else:
-            print(f"Błąd: Plik {file_name} nie został znaleziony.")
+            print(f"Błąd: Plik {full_path} nie został znaleziony.")
 
         return full_path
 
     def on_Gen_GCODE_button_click(self):
         path_to_svg = self.on_Gen_SVG_button_click()
+
+        raw_scale = self.scale.text()
+        raw_resolution = self.resolution.text()
+        scale = int(raw_scale) if raw_scale else 1
+        resolution = int(raw_resolution) if raw_resolution else 1
+
         if not path_to_svg:
             print("Nie można wygenerować GCODE - błąd pliku SVG.")
             return
         path_to_gcode = path_to_svg.replace(".svg", ".gcode")
         try:
-            self.SVGToGcode(path_to_svg, path_to_gcode)
+            self.SVGToGcode(path_to_svg, path_to_gcode,scale, resolution)
         except Exception as e:
             print(f"Wystąpił błąd podczas konwersji: {e}")
