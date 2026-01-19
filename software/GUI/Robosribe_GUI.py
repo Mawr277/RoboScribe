@@ -22,11 +22,26 @@ LISTA_CZCIONEK = [
 APP_TITLE = "Roboscribe"
 APP_ID = 'roboscribe.gui'
 DEFAULT_WINDOW_SIZE = (1200,1000)
+STYLE_SHEET= """
+    QPushButton{
+        background-color: #0d6efd;
+        color: white;
+        font-weight: bold;
+        border-radius: 5px;
+        padding: 5px;
+    }
 
+    QLineEdit{
+        background-color: white;
+        border-radius: 5px;
+        color:black;
+    }
+"""
 def launch_app(Create_SVG_logic, Create_GCODE_logic):
     myappid = APP_ID
     app = QApplication(sys.argv)
-
+    app.setStyleSheet(STYLE_SHEET)
+    
     try:
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except ImportError:
@@ -153,6 +168,9 @@ class MyApp(QWidget):
         self.w_input.setValidator(validator_size)
         self.h_input.setValidator(validator_size)
 
+        line = QLabel("<hr>")
+        left_layout.addWidget(line)
+        
         #pola do czesci GCODE
         validator_gcode = QIntValidator(1,10)
         self.scale = add_line_edit(left_layout,"Skala", "np:1")
