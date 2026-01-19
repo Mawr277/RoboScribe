@@ -43,6 +43,13 @@ def launch_app(Create_SVG_logic, Create_GCODE_logic):
     window.show()
     sys.exit(app.exec())
 
+def add_header(parent_layout, text):
+    label = QLabel(text)
+    label.setObjectName("appTitle") 
+    parent_layout.addWidget(label)
+    return label
+
+
 def add_line_edit(parent_layout, label_text, placeholder=""):
     #element typu line_edit
     label = QLabel(label_text)
@@ -133,6 +140,8 @@ class MyApp(QWidget):
 
     def left_panel(self):
         left_layout = QVBoxLayout()
+
+        add_header(left_layout, "ROBOSCRIBE")
         
         #sciezka zapisu
         self.folder_display = add_folder_selection(
