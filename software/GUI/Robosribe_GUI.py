@@ -22,25 +22,17 @@ LISTA_CZCIONEK = [
 APP_TITLE = "Roboscribe"
 APP_ID = 'roboscribe.gui'
 DEFAULT_WINDOW_SIZE = (1200,1000)
-STYLE_SHEET= """
-    QPushButton{
-        background-color: #0d6efd;
-        color: white;
-        font-weight: bold;
-        border-radius: 5px;
-        padding: 5px;
-    }
 
-    QLineEdit{
-        background-color: white;
-        border-radius: 5px;
-        color:black;
-    }
-"""
 def launch_app(Create_SVG_logic, Create_GCODE_logic):
     myappid = APP_ID
     app = QApplication(sys.argv)
-    app.setStyleSheet(STYLE_SHEET)
+
+    base_path = os.path.dirname(os.path.abspath(__file__))
+    qss_file = os.path.join(base_path, 'style.qss')
+    
+    if os.path.exists(qss_file):
+        with open(qss_file, "r") as f:
+            app.setStyleSheet(f.read())
     
     try:
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
@@ -50,7 +42,6 @@ def launch_app(Create_SVG_logic, Create_GCODE_logic):
     window = MyApp(Create_SVG_logic, Create_GCODE_logic)
     window.show()
     sys.exit(app.exec())
-
 
 def add_line_edit(parent_layout, label_text, placeholder=""):
     #element typu line_edit
@@ -87,7 +78,6 @@ def add_button(parent_layout,text, callback):
 
     return button
 
-
 def add_folder_selection(parent_layout, label_text, initial_path, button_text, callback):
     label = QLabel(label_text)
     line_edit = QLineEdit(initial_path)
@@ -99,7 +89,6 @@ def add_folder_selection(parent_layout, label_text, initial_path, button_text, c
     parent_layout.addWidget(line)
     
     return line_edit
-
 
 class MyApp(QWidget):
     def __init__(self, function1, function2):
@@ -135,7 +124,6 @@ class MyApp(QWidget):
 
         #prawy panel
         self.svg_widget = QSvgWidget()
-        self.svg_widget.setStyleSheet("background-color: #ffffff; border: 1px solid #cccccc;")
 
         #glowny layout
         main_layout = QHBoxLayout()
@@ -151,7 +139,7 @@ class MyApp(QWidget):
             parent_layout=left_layout,
             label_text="Folder zapisu:",
             initial_path=self.working_directory,
-            button_text="Zmień folder zapisu...",
+            button_text="Zmień folder zapisu",
             callback=self.select_working_folder
         )
 
