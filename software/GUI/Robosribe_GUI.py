@@ -2,6 +2,7 @@ import sys
 import os
 import ctypes
 from PyQt6.QtWidgets import (
+    QMainWindow,
     QApplication,
     QWidget,
     QLabel,
@@ -89,15 +90,16 @@ def add_folder_selection(parent_layout, label_text, initial_path, button_text, c
     label = QLabel(label_text)
     line_edit = QLineEdit(initial_path)
     line_edit.setReadOnly(True) 
+    line = QLabel("<hr>")
+
     parent_layout.addWidget(label)
     parent_layout.addWidget(line_edit)
     add_button(parent_layout, button_text, callback)
-    line = QLabel("<hr>")
     parent_layout.addWidget(line)
     
     return line_edit
 
-class MyApp(QWidget):
+class MyApp(QMainWindow):
     def __init__(self, function1, function2):
         super().__init__()
 
@@ -126,6 +128,10 @@ class MyApp(QWidget):
             self.setWindowIcon(QIcon(icon_path))
 
     def setup_ui(self):
+
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+
         #lewy panel
         left_widget = self.left_panel()
 
@@ -134,9 +140,10 @@ class MyApp(QWidget):
 
         #glowny layout
         main_layout = QHBoxLayout()
+        central_widget.setLayout(main_layout)
+
         main_layout.addWidget(left_widget,1)
         main_layout.addWidget(self.svg_widget,3)
-        self.setLayout(main_layout)
 
     def left_panel(self):
         left_layout = QVBoxLayout()
@@ -152,8 +159,11 @@ class MyApp(QWidget):
             callback=self.select_working_folder
         )
 
-        #pola do czesci SVG
+        #walidatory
         validator_size = QIntValidator(100, 9999, self)
+        validator_gcode = QIntValidator(1,10)
+        
+        #pola do czesci SVG
         
         self.text_input = add_line_edit(left_layout, "Tekst:", "np: Roboscribe")
         self.w_input = add_line_edit(left_layout, "Szerokość:", "np: 300")
@@ -169,7 +179,6 @@ class MyApp(QWidget):
         left_layout.addWidget(line)
         
         #pola do czesci GCODE
-        validator_gcode = QIntValidator(1,10)
         self.scale = add_line_edit(left_layout,"Skala", "np:1")
         self.resolution = add_line_edit(left_layout,"Rozdzielczość", "np: 1")
         self.Gen_GCODE_button = add_button(left_layout, "Generuj GCODE", self.on_Gen_GCODE_button_click)
