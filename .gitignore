@@ -12,6 +12,7 @@
 # Firmware
 **/.clangd
 **/build/
-**/sdkconfig
 **/sdkconfig.old
+**/sdkconfig
+
 # Temporary
