@@ -228,13 +228,13 @@ class SVGProcessor:
             if ik is None:
                 continue
 
-            t1, t2 = ik
+            kat_baza, kat_lokcia = ik
 
             if i == 0:
                 self.gcode_wyjsciowy.append("G01 Z0")
                 #zasadniczo w standardze G-code nie ma interpolacji osiowej, wiec załozymy
                 #że poruszamy sie według interpolacji kołowej
-            self.gcode_wyjsciowy.append(f"G03 T1{t1:.2f} T2{t2:.2f}")
+            self.gcode_wyjsciowy.append(f"G03 T{kat_baza:.2f} V{kat_lokcia:.2f}")
 
         self.gcode_wyjsciowy.append("G01 Z1")
 
