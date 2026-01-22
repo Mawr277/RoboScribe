@@ -155,8 +155,9 @@ def do_ukladu_lokalnego(x, y, Bx, By):
         
 def kinematyka_odwrotna(x, y):
     d = math.sqrt(x*x + y*y)
-
+    # Sprawdzenie zasięgu, drugi warunek do przemyślenia
     if d > Rmax or d < abs(L1 - L2):
+        print(f"Punkt ({x:.2f}, {y:.2f}) poza zasięgiem robota.error 2")
         return None
 
     alpha = math.acos((L1**2 + L2**2 - d**2) / (2*L1*L2))
@@ -170,6 +171,7 @@ def kinematyka_odwrotna(x, y):
     t2 = math.degrees(theta2)
 
     if not (0 <= t1 <= 180 and 0 <= t2 <= 180):
+        print(f"Punkt ({x:.2f}, {y:.2f}) poza zasięgiem robota.error 2")
         return None
 
     return t1, t2
@@ -217,7 +219,7 @@ class SVGProcessor:
 
         Bx, By = wyznacz_baze_robota(punkty)
         
-        self.gcode_wyjsciowy.append(f"G0 X{Bx:.2f} Y{By:.2f}")
+        self.gcode_wyjsciowy.append(f"G00 X{Bx:.2f} Y{By:.2f}")
         
         for i, (x, y) in enumerate(punkty):
             xl, yl = do_ukladu_lokalnego(x, y, Bx, By)
@@ -229,11 +231,12 @@ class SVGProcessor:
             t1, t2 = ik
 
             if i == 0:
-                self.gcode_wyjsciowy.append("G0 Z0")
+                self.gcode_wyjsciowy.append("G01 Z0")
+                #zasadniczo w standardze G-code nie ma interpolacji osiowej, wiec załozymy
+                #że poruszamy sie według interpolacji kołowej
+            self.gcode_wyjsciowy.append(f"G03 T1{t1:.2f} T2{t2:.2f}")
 
-            self.gcode_wyjsciowy.append(f"M1 T1={t1:.2f} T2={t2:.2f}")
-
-        self.gcode_wyjsciowy.append("G0 Z1")
+        self.gcode_wyjsciowy.append("G01 Z1")
 
 def convert_svg_to_gcode(input_path, output_path, skala=1.0, rozdzielczosc=1.0):
     """
