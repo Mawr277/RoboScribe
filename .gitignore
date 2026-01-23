@@ -35,3 +35,4 @@ docs/latex/Makefile
 **/sdkconfig.old
 # Temporary
 /software/__pycache__
+software/better2.py

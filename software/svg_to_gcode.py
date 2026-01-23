@@ -154,27 +154,42 @@ def do_ukladu_lokalnego(x, y, Bx, By):
     return x - Bx, y - By
         
 def kinematyka_odwrotna(x, y):
-    d = math.sqrt(x*x + y*y)
-    # Sprawdzenie zasięgu, drugi warunek do przemyślenia
-    if d > Rmax or d < abs(L1 - L2):
-        print(f"Punkt ({x:.2f}, {y:.2f}) poza zasięgiem robota.error 2")
+    """
+    @brief Oblicza kinematykę odwrotną dla zadanego punktu (x, y).
+    @details Używa konfiguracji z "łokciem w dół" i ogranicza kąt bazowy do lewej półpłaszczyzny.
+    @param x Współrzędna x w lokalnym układzie odniesienia robota.
+    @param y Współrzędna y w lokalnym układzie odniesienia robota.
+    @return Krotka (kąt_bazy, kąt_łokcia) w stopniach lub None, jeśli punkt jest nieosiągalny.
+    """
+    dist_sq = x**2 + y**2
+    
+    # Sprawdzenie, czy punkt jest w ogóle osiągalny
+    if dist_sq > Rmax**2 or dist_sq < (L1 - L2)**2:
+        #print(f"Punkt ({x:.2f}, {y:.2f}) jest poza fizycznym zasięgiem robota.")
+        return None
+        
+    D = (dist_sq - L1**2 - L2**2) / (2 * L1 * L2)
+
+    # Zabezpieczenie przed błędami precyzji zmiennoprzecinkowej
+    if not -1 <= D <= 1:
+        #print(f"Punkt ({x:.2f}, {y:.2f}) jest poza fizycznym zasięgiem robota (błąd precyzji).")
         return None
 
-    alpha = math.acos((L1**2 + L2**2 - d**2) / (2*L1*L2))
-    theta2 = math.pi - alpha
+    # Obliczenie kąta łokcia (v2) dla konfiguracji "łokieć w dół" (zakres -180 do 0 stopni)
+    v2_rad = np.arctan2(-np.sqrt(1 - D**2), D)
 
-    beta = math.atan2(y, x)
-    gamma = math.acos((L1**2 + d**2 - L2**2) / (2*L1*d))
-    theta1 = beta - gamma
+    # Obliczenie kąta podstawy (v1)
+    v1_rad = np.arctan2(y, x) - np.arctan2(L2 * np.sin(v2_rad), L1 + L2 * np.cos(v2_rad))
+    
+    v1_deg = np.degrees(v1_rad) % 360  # Normalizacja do zakresu 0-360
+    v2_deg = np.degrees(v2_rad)
 
-    t1 = math.degrees(theta1)
-    t2 = math.degrees(theta2)
-
-    if not (0 <= t1 <= 180 and 0 <= t2 <= 180):
-        print(f"Punkt ({x:.2f}, {y:.2f}) poza zasięgiem robota.error 2")
+    # Sprawdzenie limitu dla lewej strony (90 < v1 < 270 stopni)
+    if not (90 < v1_deg < 270):
+        #print(f"Punkt ({x:.2f}, {y:.2f}): Kąt v1 ({v1_deg:.1f}°) poza zakresem (90, 270).")
         return None
 
-    return t1, t2
+    return v1_deg, v2_deg
 
 class SVGProcessor:
     def __init__(self, rozdzielczosc, skala):
@@ -266,9 +281,9 @@ def convert_svg_to_gcode(input_path, output_path, skala=1.0, rozdzielczosc=1.0):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Konwertuje plik SVG na G-code dla robota RoboScribe.")
-    parser.add_argument("input_path", nargs='?', default="software/test/output_path_arial.svg",
+    parser.add_argument("input_path", nargs='?', default="software/test/plik5.svg",
                         help="Ścieżka do wejściowego pliku SVG.")
-    parser.add_argument("output_path", nargs='?', default="software/test/rysunek.gcode",
+    parser.add_argument("output_path", nargs='?', default="software/test/plik6.gcode",
                         help="Ścieżka do wyjściowego pliku G-code.")
     parser.add_argument("--skala", type=float, default=1.0,
                         help="Skala konwersji współrzędnych SVG na jednostki G-code.")
