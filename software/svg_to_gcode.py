@@ -1,4 +1,19 @@
-## @file 
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+@file svg_to_gcode.py
+@brief Konwersja SVG do G-code dla robota RoboScribe.
+
+Ten skrypt konwertuje elementy SVG na polecenia G-code,
+które mogą być wykorzystane do sterowania robotem RoboScribe.
+
+@author Bartosz Chabros
+@version 0.1
+@date 2026-01-26
+@copyright Copyright (c) 2026
+"""
+
 import argparse
 from svgelements import SVG, Rect, Circle, Ellipse, Line, SimpleLine, Polyline, Polygon, Text, Group
 import numpy as np
