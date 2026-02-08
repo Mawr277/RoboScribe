@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
+@file better.py
+@brief Wizualizacja ruchu robota na podstawie G-code.
+
 Ten skrypt interpretuje G-code wygenerowany dla robota RoboScribe,
 oblicza kolejne pozycje jego ramion za pomocą kinematyki prostej
 i tworzy animowaną wizualizację ruchu.
