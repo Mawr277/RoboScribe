@@ -2,12 +2,12 @@
 **/.vscode
 **/.devcontainer
 /datasheets
-/documents
 .directory
 
 # Documentation (with doxygen)
 /docs/html
 /docs/latex
+/docs/Documents
 
 # Firmware
 **/.clangd
@@ -15,4 +15,5 @@
 **/sdkconfig.old
 **/sdkconfig
 
-# Temporary
+# Python
+software/**/__pycache__/
