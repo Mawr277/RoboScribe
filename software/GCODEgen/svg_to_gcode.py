@@ -234,15 +234,12 @@ class SVGProcessor:
         elif isinstance(element, Polygon):
             punkty = przetwarzaj_polygon(element)
         elif isinstance(element, Text):
-            print(f"Nieobsługiwany element: {type(element)} - przekonwertuj tekst na ścieżkę w edytorze SVG.")
-            return
+            raise ValueError(f"Nieobsługiwany element: {type(element)} - przekonwertuj tekst na ścieżkę w edytorze SVG.")
         else:
-            print(f"Nieobsługiwany element: {type(element)}")
-            return
+            raise ValueError(f"Nieobsługiwany element: {type(element)}")
 
         if not punkty:
-            print(f"lista punktów jest pusta dla elementu: {type(element)}")
-            return
+            raise ValueError(f"lista punktów jest pusta dla elementu: {type(element)}")
         
         # Skalowanie punktów
         punkty = [(x * self.skala, y * self.skala) for x, y in punkty]
@@ -275,11 +272,9 @@ def convert_svg_to_gcode(input_path, output_path, skala=1.0, rozdzielczosc=1.0):
     try:
         svg = SVG.parse(input_path)
     except FileNotFoundError:
-        print(f"Błąd: Nie znaleziono pliku wejściowego: {input_path}")
-        return
+        raise FileNotFoundError(f"Błąd: Nie znaleziono pliku wejściowego: {input_path}")
     except Exception as e:
-        print(f"Błąd podczas parsowania pliku SVG: {e}")
-        return
+        raise Exception(f"Błąd podczas parsowania pliku SVG: {e}")
 
     processor = SVGProcessor(rozdzielczosc=rozdzielczosc, skala=skala)
     
@@ -291,14 +286,14 @@ def convert_svg_to_gcode(input_path, output_path, skala=1.0, rozdzielczosc=1.0):
             f.write("\n".join(processor.gcode_wyjsciowy))
         print(f"Gotowe! Wygenerowano plik {output_path}")
     except IOError as e:
-        print(f"Błąd podczas zapisu do pliku wyjściowego: {e}")
+        raise IOError(f"Błąd podczas zapisu do pliku wyjściowego: {e}")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Konwertuje plik SVG na G-code dla robota RoboScribe.")
-    parser.add_argument("input_path", nargs='?', default="software/test/plik5.svg",
+    parser.add_argument("input_path", nargs='?', default="software/GCODEgen/test/test_shapes.svg",
                         help="Ścieżka do wejściowego pliku SVG.")
-    parser.add_argument("output_path", nargs='?', default="software/test/plik6.gcode",
+    parser.add_argument("output_path", nargs='?', default="software/GCODEgen/symulacja/plik7.gcode",
                         help="Ścieżka do wyjściowego pliku G-code.")
     parser.add_argument("--skala", type=float, default=1.0,
                         help="Skala konwersji współrzędnych SVG na jednostki G-code.")

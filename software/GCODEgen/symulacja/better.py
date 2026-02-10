@@ -94,7 +94,7 @@ def main():
     """
     Główna funkcja uruchamiająca interpreter G-code i wizualizację.
     """
-    gcode_file = 'software/test/plik5.gcode'
+    gcode_file = 'software/GCODEgen/symulacja/plik7.gcode'
     
     try:
         all_points = parse_gcode(gcode_file)
@@ -185,17 +185,17 @@ def main():
     anim = animation.FuncAnimation(fig, animate, frames=len(all_points),
                                    interval=30, blit=True, repeat=True)
 
-    # Zapisywanie animacji do pliku .gif
-    try:
-        print("Zapisywanie animacji do pliku 'roboscribe_animation.gif'...")
-        # Do zapisu jako GIF wymagana jest biblioteka Pillow.
-        # Zainstaluj ją, jeśli jej brakuje: pip install Pillow
-        anim.save('roboscribe_animation.gif', writer='pillow', fps=30, dpi=100)
-        print("Animacja została pomyślnie zapisana.")
-    except Exception as e:
-        print("\nBŁĄD: Nie udało się zapisać animacji.")
-        print(f"Szczegóły błędu: {e}")
-        print("Upewnij się, że masz zainstalowaną bibliotekę 'Pillow' (pip install Pillow).")
+    # # Zapisywanie animacji do pliku .gif
+    # try:
+    #     print("Zapisywanie animacji do pliku 'roboscribe_animation.gif'...")
+    #     # Do zapisu jako GIF wymagana jest biblioteka Pillow.
+    #     # Zainstaluj ją, jeśli jej brakuje: pip install Pillow
+    #     anim.save('roboscribe_animation.gif', writer='pillow', fps=30, dpi=100)
+    #     print("Animacja została pomyślnie zapisana.")
+    # except Exception as e:
+    #     print("\nBŁĄD: Nie udało się zapisać animacji.")
+    #     print(f"Szczegóły błędu: {e}")
+    #     print("Upewnij się, że masz zainstalowaną bibliotekę 'Pillow' (pip install Pillow).")
 
     ax.legend()
     plt.title("Wizualizacja ruchu robota na podstawie G-code")
