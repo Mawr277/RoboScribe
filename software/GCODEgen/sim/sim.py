@@ -15,10 +15,10 @@ import matplotlib.animation as animation
 import re
 import math
 
-# --- Stałe ramion robota (zgodne z svg_to_gcode.py) ---
+
 L1 = 70.0
 L2 = 70.0
-# ---------------------------------------------------------
+
 
 def forward_kinematics(theta1_deg, theta2_deg):
     """
@@ -113,7 +113,7 @@ def main():
     ax.set_ylabel("Współrzędna Y")
     ax.grid(True)
 
-    # Rysowanie kompletnej ścieżki (z manualnie odwróconą osią Y)
+    # Rysowanie 
     path_segments = []
     current_segment_x = []
     current_segment_y = []
@@ -123,7 +123,7 @@ def main():
             world_x = p['end_local'][0] + p['base_pos'][0]
             world_y = p['end_local'][1] + p['base_pos'][1]
             current_segment_x.append(world_x)
-            current_segment_y.append(-world_y)  # Manualne odwrócenie Y
+            current_segment_y.append(-world_y)  
         else:
             if current_segment_x:
                 path_segments.append((current_segment_x, current_segment_y))
@@ -142,7 +142,7 @@ def main():
     elbow_joint, = ax.plot([], [], 'ro', markersize=6)
     end_effector_joint, = ax.plot([], [], 'go', markersize=6)
     
-    # Ustalenie granic wykresu, aby całe ramię było widoczne (z odwróconą osią Y)
+    
     world_points_x = []
     world_points_y = []
     for p in all_points:
@@ -153,7 +153,7 @@ def main():
         end_y = p['end_local'][1] + base_y
         
         world_points_x.extend([base_x, elbow_x, end_x])
-        world_points_y.extend([-base_y, -elbow_y, -end_y])  # Manualne odwrócenie Y
+        world_points_y.extend([-base_y, -elbow_y, -end_y])  
 
     if not world_points_x or not world_points_y:
         print("Brak punktów do narysowania.")
@@ -168,7 +168,7 @@ def main():
         p = all_points[i]
         base_pos = p['base_pos']
         
-        # Współrzędne w układzie świata (z manualnie odwróconą osią Y)
+        
         base_pos_plot = (base_pos[0], -base_pos[1])
         elbow_pos_plot = (p['elbow_local'][0] + base_pos[0], -(p['elbow_local'][1] + base_pos[1]))
         end_pos_plot = (p['end_local'][0] + base_pos[0], -(p['end_local'][1] + base_pos[1]))

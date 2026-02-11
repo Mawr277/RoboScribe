@@ -64,7 +64,7 @@ def przetwarzaj_rect(element):
         (x + w, y),
         (x + w, y + h),
         (x, y + h),
-        (x, y)  # zamknięcie
+        (x, y)  
     ]
     return punkty
 
@@ -162,7 +162,7 @@ def bounding_box(punkty):
 def wyznacz_baze_robota(punkty, margines=20):
     xmin, xmax, ymin, ymax = bounding_box(punkty)
     Bx = (xmin + xmax) / 2
-    By = ymin - margines   # ZA elementem
+    By = ymin - margines   # korekcja baza ramienia =! os krokowych(baza robota)
     return Bx, By
         
 def do_ukladu_lokalnego(x, y, Bx, By):
@@ -287,20 +287,3 @@ def convert_svg_to_gcode(input_path, output_path, skala=1.0, rozdzielczosc=1.0):
         print(f"Gotowe! Wygenerowano plik {output_path}")
     except IOError as e:
         raise IOError(f"Błąd podczas zapisu do pliku wyjściowego: {e}")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Konwertuje plik SVG na G-code dla robota RoboScribe.")
-    parser.add_argument("input_path", nargs='?', default="software/GCODEgen/test/test_shapes.svg",
-                        help="Ścieżka do wejściowego pliku SVG.")
-    parser.add_argument("output_path", nargs='?', default="software/GCODEgen/symulacja/plik7.gcode",
-                        help="Ścieżka do wyjściowego pliku G-code.")
-    parser.add_argument("--skala", type=float, default=1.0,
-                        help="Skala konwersji współrzędnych SVG na jednostki G-code.")
-    parser.add_argument("--rozdzielczosc", type=float, default=1.0,
-                        help="Rozdzielczość próbkowania - maksymalna odległość między punktami.")
-    
-    args = parser.parse_args()
-    
-    convert_svg_to_gcode(args.input_path, args.output_path, args.skala, args.rozdzielczosc)
-    
