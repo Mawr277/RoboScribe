@@ -1,0 +1,19 @@
+# General
+**/.vscode
+**/.devcontainer
+/datasheets
+.directory
+
+# Documentation (with doxygen)
+/docs/html
+/docs/latex
+/docs/Documents
+
+# Firmware
+**/.clangd
+**/build/
+**/sdkconfig.old
+**/sdkconfig
+
+# Python
+software/**/__pycache__/

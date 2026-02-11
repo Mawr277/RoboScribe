@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500" viewBox="0 0 400 500">
+  <!-- Tło -->
+  <rect x="0" y="0" width="400" height="500" fill="white" stroke="black" stroke-width="1"/>
+  
+  <!-- Rect (Prostokąt) -->
+  <rect x="20" y="20" width="100" height="60" fill="none" stroke="black" stroke-width="2"/>
+  <text x="20" y="110" font-size="14" font-family="Arial">Rect</text>
+  
+  <!-- Circle (Koło) -->
+  <circle cx="200" cy="50" r="40" fill="none" stroke="black" stroke-width="2"/>
+  <text x="170" y="110" font-size="14" font-family="Arial">Circle</text>
+  
+  <!-- Ellipse (Elipsa) -->
+  <ellipse cx="320" cy="50" rx="50" ry="35" fill="none" stroke="black" stroke-width="2"/>
+  <text x="285" y="110" font-size="14" font-family="Arial">Ellipse</text>
+  
+  <!-- Line (Linia) -->
+  <line x1="40" y1="140" x2="120" y2="200" stroke="black" stroke-width="2"/>
+  <text x="40" y="220" font-size="14" font-family="Arial">Line</text>
+  
+  <!-- Polyline (Linia łamana) -->
+  <polyline points="180,140 220,160 200,200 240,190" fill="none" stroke="black" stroke-width="2"/>
+  <text x="170" y="220" font-size="14" font-family="Arial">Polyline</text>
+  
+  <!-- Polygon (Wielokąt) -->
+  <polygon points="320,140 360,140 350,190 330,200 310,190" fill="none" stroke="black" stroke-width="2"/>
+  <text x="300" y="220" font-size="14" font-family="Arial">Polygon</text>
+  
+  <!-- Path (Ścieżka) -->
+  <path d="M 40 250 Q 80 240 120 260 T 200 250" fill="none" stroke="black" stroke-width="2"/>
+  <text x="40" y="290" font-size="14" font-family="Arial">Path</text>
+  
+  <!-- Kwadrat (szczególny przypadek Rect) -->
+  <rect x="260" y="240" width="80" height="80" fill="none" stroke="black" stroke-width="2"/>
+  <text x="270" y="335" font-size="14" font-family="Arial">Square</text>
+  
+  <!-- Złożona ścieżka - gwiazda -->
+  <path d="M 70 380 L 85 420 L 100 380 L 120 400 L 85 410 L 70 450 L 60 410 L 25 400 L 55 380 Z" fill="none" stroke="black" stroke-width="2"/>
+  <text x="50" y="470" font-size="14" font-family="Arial">Star Path</text>
+  
+  <!-- Zaokrąglony prostokąt -->
+  <rect x="200" y="380" width="80" height="60" rx="10" ry="10" fill="none" stroke="black" stroke-width="2"/>
+  <text x="190" y="460" font-size="14" font-family="Arial">Rounded Rect</text>
+</svg>
