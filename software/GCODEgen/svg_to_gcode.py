@@ -14,12 +14,12 @@ które mogą być wykorzystane do sterowania robotem RoboScribe.
 @copyright Copyright (c) 2026
 """
 
-import argparse
+
 from svgelements import SVG, Rect, Circle, Ellipse, Line, SimpleLine, Polyline, Polygon, Text, Group
 import numpy as np
 import math
 
-# ---- stałe globalne ----
+
 L1 = 70.0   
 L2 = 70.0
 Rmax = L1 + L2
@@ -53,10 +53,10 @@ def przetwarzaj_rect(element):
     @note TODO: uwzględnić zaokrąglone narożniki w przyszłości
     """
     #TODO:uwzględnić zaokrąglone narożniki w przyszłości
-    x = element.x or 0
-    y = element.y or 0
-    w = element.width or 0
-    h = element.height or 0
+    x = element.x 
+    y = element.y 
+    w = element.width 
+    h = element.height 
     
     # Punkty narożników prostokąta: lewy-górny -> prawy-górny -> prawy-dolny -> lewy-dolny -> zamknięcie
     punkty = [
@@ -76,9 +76,9 @@ def przetwarzaj_circle(element, rozdzielczosc):
     @param rozdzielczosc Maksymalna odległość między punktami
     @return Lista krotek (x, y) reprezentujących punkty na okręgu
     """
-    cx = element.cx or 0
-    cy = element.cy or 0
-    r = element.r or 0
+    cx = element.cx 
+    cy = element.cy 
+    r = element.r 
     
     # Liczba segmentów na podstawie Rozdzielczości
     segments = max(int(2 * math.pi * r / rozdzielczosc), 8) if rozdzielczosc > 0 else 8
@@ -100,10 +100,10 @@ def przetwarzaj_ellipse(element, rozdzielczosc):
     @param rozdzielczosc Maksymalna odległość między punktami
     @return Lista krotek (x, y) reprezentujących punkty na elipsie
     """
-    cx = element.cx or 0
-    cy = element.cy or 0
-    rx = element.rx or 0
-    ry = element.ry or 0
+    cx = element.cx 
+    cy = element.cy 
+    rx = element.rx 
+    ry = element.ry 
     
     # Liczba segmentów na podstawie średniej Rozdzielczości
     segments = max(int(2 * math.pi * max(rx, ry) / rozdzielczosc), 8) if rozdzielczosc > 0 else 8
@@ -123,10 +123,10 @@ def przetwarzaj_line(element):
     @param element Obiekt Line lub SimpleLine
     @return Lista dwóch krotek (x1, y1) i (x2, y2) reprezentujących końce linii
     """
-    x1 = element.x1 or 0
-    y1 = element.y1 or 0
-    x2 = element.x2 or 0
-    y2 = element.y2 or 0
+    x1 = element.x1 
+    y1 = element.y1 
+    x2 = element.x2 
+    y2 = element.y2 
     
     return [(x1, y1), (x2, y2)]
  
@@ -160,7 +160,7 @@ def bounding_box(punkty):
     return min(xs), max(xs), min(ys), max(ys)
         
 def wyznacz_baze_robota(punkty, margines=20):
-    xmin, xmax, ymin, ymax = bounding_box(punkty)
+    xmin, xmax, ymin, _ = bounding_box(punkty)
     Bx = (xmin + xmax) / 2
     By = ymin - margines   # korekcja baza ramienia =! os krokowych(baza robota)
     return Bx, By
