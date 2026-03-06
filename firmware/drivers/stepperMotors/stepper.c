@@ -3,7 +3,7 @@
  * @author Maciej Nowicki (maciejnowicki1234@gmail.com)
  * @brief Stepper motor control driver using recommended rmt implementation
  * @version 0.1
- * @date 2026-02-24
+ * @date 2026-03=06
  * 
  * @copyright Copyright (c) 2026
  * 

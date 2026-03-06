@@ -2,8 +2,8 @@
  * @file stepper.h
  * @author Maciej Nowicki (maciejnowicki1234@gmail.com)
  * @brief Header file for stepper motor driver
- * @version 0.1
- * @date 2026-02-24
+ * @version 1.0
+ * @date 2026-03-06
  * 
  * @copyright Copyright (c) 2026
  * 

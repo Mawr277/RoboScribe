@@ -1,3 +1,12 @@
+/**
+ * @file stepperMotorEncoder.c
+ * @brief ESPIDF stepper motor rmt encoder example code
+ * @version 0.1
+ * @date 2026-03-06
+ * 
+ * @copyright Copyright (c) 2026
+ * 
+ */
 #pragma once
 
 #include <stdint.h>
