@@ -1,33 +1,49 @@
 /**
  * @file stepper.h
  * @author Maciej Nowicki (maciejnowicki1234@gmail.com)
- * @brief 
+ * @brief Header file for stepper motor driver
  * @version 0.1
  * @date 2026-02-24
  * 
  * @copyright Copyright (c) 2026
  * 
  */
-#include "driver/gpio.h"
-#include "driver/ledc.h"
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "driver/rmt_tx.h"
+#include "driver/gpio.h"
+#include "esp_err.h"
 
 #define MOTOR_LEFT_STEP     1
 #define MOTOR_LEFT_DIR      2
 #define MOTOR_RIGHT_STEP    5
 #define MOTOR_RIGHT_DIR     4
-#define MOTOR_DIR_PINS      ((1ULL<<MOTOR_LEFT_DIR) | (1ULL<<MOTOR_RIGHT_DIR))
-#define STEPS_PER_REV       6400
+#define STEP_MOTOR_ENABLE_LEVEL  0 // DRV8825 is enabled on low level
+#define STEP_MOTOR_SPIN_DIR_CLOCKWISE 0
+#define STEP_MOTOR_SPIN_DIR_COUNTERCLOCKWISE !STEP_MOTOR_SPIN_DIR_CLOCKWISE
 
-#define MOTOR_CHANNEL_RIGHT LEDC_CHANNEL_0      
-#define MOTOR_CHANNEL_LEFT  LEDC_CHANNEL_1      
-#define LEDC_TIMER          LEDC_TIMER_0
-#define LEDC_FREQ_HZ        1000
-#define LEDC_MODE           LEDC_LOW_SPEED_MODE
-#define LEDC_DUTY_RES       LEDC_TIMER_10_BIT
-#define LEDC_50_PERCENT     512
+#define STEP_MOTOR_RESOLUTION_HZ 1000000 // 1MHz resolution
 
-void steppersInit(void);
-void start_motor(ledc_channel_t ledc_channel, uint32_t speed_hz, bool direction);
-void stop_motor(ledc_channel_t ledc_channel);
+/**
+ * @brief Stepper motor and rmt initialization
+ * 
+ */
+void initSteppers(void);
+
+/**
+ * @brief Move robot forward/backward
+ * 
+ * @param direction move robot 0 - backwward, 1 - forward
+ * @param speedHz robot speed in PWM signal frequency
+ * @param stepsNum number of motor steps
+ */
+void robotMove(uint32_t direction, uint32_t speedHz, uint64_t stepsNum);
+/**
+ * @brief Rotate robot
+ * 
+ * @param direction move robot 1 - right, 0 - left
+ * @param speedHz robot speed in PWM signal frequency
+ * @param stepsNum number of motor steps
+ */
+void robotRotate(uint32_t direction, uint32_t speedHz, uint64_t stepsNum);

@@ -1,7 +1,8 @@
 set(srcs)
 set(include_dirs ".")
 
-list(APPEND srcs "stepper.h" "stepper.c")
+list(APPEND srcs "stepper.h" "stepper.c" 
+                 "stepperMotorEncoder.h" "stepperMotorEncoder.c")
 
 idf_component_register(SRCS "${srcs}"
                        INCLUDE_DIRS "${include_dirs}"
