@@ -9,3 +9,7 @@
  * @copyright Copyright (c) 2026
  * 
  */
+
+#define _USE_MATH_DEFINES
+#include <math.h>
+
