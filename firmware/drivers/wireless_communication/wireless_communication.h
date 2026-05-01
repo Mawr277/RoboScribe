@@ -11,4 +11,8 @@
 #define WIFI_PASS      "Twoje_Haslo"
 #define MAX_HTTP_RECV  1024
 
+static const char *WIRELESS_COMMUNICATION_TAG = "wireless_communication";
+
 esp_err_t upload_post_handler(httpd_req_t *req);
+
+esp_err_t start_webserver(void);
