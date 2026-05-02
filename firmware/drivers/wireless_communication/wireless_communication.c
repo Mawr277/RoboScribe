@@ -56,9 +56,9 @@ esp_err_t start_webserver(void)
     httpd_handle_t server = NULL;
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
 
-    ESP_LOGI(TAG, "Starting HTTP Server on port: '%d'", config.server_port);
+    ESP_LOGI(WIRELESS_COMMUNICATION_TAG, "Starting HTTP Server on port: '%d'", config.server_port);
     if (httpd_start(&server, &config) != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to start file server!");
+        ESP_LOGE(WIRELESS_COMMUNICATION_TAG, "Failed to start file server!");
         return ESP_FAIL;
     }
 
