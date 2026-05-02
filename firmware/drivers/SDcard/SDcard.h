@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2026
  * 
  */
+#pragma once
 
 #include <string.h>
 #include <sys/unistd.h>
