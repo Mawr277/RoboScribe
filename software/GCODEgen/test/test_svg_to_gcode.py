@@ -11,6 +11,7 @@ rozdzielczosc = 0.5
 
 convert_svg_to_gcode(
     input_path=input_file, 
+    
     output_path=output_file,
     skala=skala,
     rozdzielczosc=rozdzielczosc 
