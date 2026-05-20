@@ -246,7 +246,7 @@ class SVGProcessor:
 
         Bx, By = wyznacz_baze_robota(punkty)
         
-        self.gcode_wyjsciowy.append(f"G00 X{Bx:.2f} Y{By:.2f}")
+        self.gcode_wyjsciowy.append(f"G00 X{Bx:.0f} Y{By:.0f}")
         
         for i, (x, y) in enumerate(punkty):
             xl, yl = do_ukladu_lokalnego(x, y, Bx, By)
@@ -261,7 +261,7 @@ class SVGProcessor:
                 self.gcode_wyjsciowy.append("G01 Z0")
                 #zasadniczo w standardze G-code nie ma interpolacji osiowej, wiec załozymy
                 #że poruszamy sie według interpolacji kołowej
-            self.gcode_wyjsciowy.append(f"G03 T{kat_baza:.2f} V{kat_lokcia:.2f}")
+            self.gcode_wyjsciowy.append(f"G03 T{kat_baza:.0f} V{kat_lokcia:.0f}")
 
         self.gcode_wyjsciowy.append("G01 Z1")
 
