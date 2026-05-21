@@ -17,3 +17,5 @@
 
 # Python
 software/**/__pycache__/
+*.svg
+*.gcode
