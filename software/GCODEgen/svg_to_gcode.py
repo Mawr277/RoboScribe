@@ -203,7 +203,13 @@ def kinematyka_odwrotna(x, y):
     if not (90 < v1_deg < 270):
         #print(f"Punkt ({x:.2f}, {y:.2f}): Kąt v1 ({v1_deg:.1f}°) poza zakresem (90, 270).")
         return None
-
+    #zamiana zakresu katów
+    # 0 dół, 180 góra, 90 prawo
+    v1_deg = v1_deg - 90
+    
+    # 0 ramie wyprostowane,180 ramie zgięte
+    v2_deg = -v2_deg  
+    
     return v1_deg, v2_deg
 
 class SVGProcessor:

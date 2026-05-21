@@ -32,6 +32,10 @@ def forward_kinematics(theta1_deg, theta2_deg):
     Returns:
         tuple: Krotka zawierająca dwie krotki: ((elbow_x, elbow_y), (end_x, end_y)).
     """
+    #zamiana kątów z ludzkiego układu współrzędnych SVG na fizyczny układ robota
+    theta1_deg = theta1_deg + 90
+    theta2_deg = -theta2_deg 
+    
     theta1_rad = math.radians(theta1_deg)
     theta2_rad = math.radians(theta2_deg)  # Kąt względny drugiego ramienia
 
@@ -94,7 +98,7 @@ def main():
     """
     Główna funkcja uruchamiająca interpreter G-code i wizualizację.
     """
-    gcode_file = 'software/GCODEgen/symulacja/plik7.gcode'
+    gcode_file = 'software/GCODEgen/test/plik9.gcode'
     
     try:
         all_points = parse_gcode(gcode_file)
