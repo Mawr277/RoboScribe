@@ -6,7 +6,7 @@ import numpy as np
 # Konfiguracja parametrów robota
 # Znalezienie ścieżki do pliku GCODE względem lokalizacji tego skryptu
 script_dir = os.path.dirname(os.path.abspath(__file__))
-NAZWA_PLIKU = os.path.join(script_dir, "plik8.gcode")
+NAZWA_PLIKU = os.path.join(script_dir, "L.gcode")
 L1 = 70.0
 L2 = 70.0
 

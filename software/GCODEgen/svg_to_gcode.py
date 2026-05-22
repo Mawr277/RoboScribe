@@ -159,10 +159,10 @@ def bounding_box(punkty):
     ys = [p[1] for p in punkty]
     return min(xs), max(xs), min(ys), max(ys)
         
-def wyznacz_baze_robota(punkty, margines=20):
+def wyznacz_baze_robota(punkty):
     xmin, xmax, ymin, _ = bounding_box(punkty)
-    Bx = (xmin + xmax) / 2
-    By = ymin - margines   # korekcja baza ramienia =! os krokowych(baza robota)
+    Bx = xmax + 10   #modyfikacje gdzie robot ma rysować             #(xmin + xmax) / 2 + 20
+    By = ymin - 20   # korekcja baza ramienia =! os krokowych(baza robota)
     return Bx, By
         
 def do_ukladu_lokalnego(x, y, Bx, By):
@@ -203,6 +203,7 @@ def kinematyka_odwrotna(x, y):
     if not (90 < v1_deg < 270):
         #print(f"Punkt ({x:.2f}, {y:.2f}): Kąt v1 ({v1_deg:.1f}°) poza zakresem (90, 270).")
         return None
+    
     #zamiana zakresu katów
     # 0 dół, 180 góra, 90 prawo
     v1_deg = v1_deg - 90
