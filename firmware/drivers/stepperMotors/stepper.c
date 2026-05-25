@@ -67,6 +67,10 @@ void robotMove(uint32_t direction, uint32_t speedHz, uint64_t stepsNum){
     for (int i = 0; i < 2; i++) {
         ESP_ERROR_CHECK(rmt_transmit(motorChannels[i], uniformMotorEncoder, &speedHz, sizeof(speedHz), &txConfig));
     }
+    
+    for (int i = 0; i < 2; i++) {
+        ESP_ERROR_CHECK(rmt_tx_wait_all_done(motorChannels[i], -1));
+    }
 }
 
 void robotRotate(uint32_t direction, uint32_t speedHz, uint64_t stepsNum){
@@ -76,5 +80,9 @@ void robotRotate(uint32_t direction, uint32_t speedHz, uint64_t stepsNum){
     txConfig.loop_count = stepsNum;
     for (int i = 0; i < 2; i++) {
         ESP_ERROR_CHECK(rmt_transmit(motorChannels[i], uniformMotorEncoder, &speedHz, sizeof(speedHz), &txConfig));
+    }
+
+    for (int i = 0; i < 2; i++) {
+        ESP_ERROR_CHECK(rmt_tx_wait_all_done(motorChannels[i], -1));
     }
 }

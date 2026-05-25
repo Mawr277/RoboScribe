@@ -3,12 +3,13 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "stepper.h"
+#include "esp_log.h"
 
 void app_main(void)
 {
     initSteppers();
-    uint32_t direction = 1;
-    uint32_t speedHz = 3000;
+    uint32_t direction = 0;
+    uint32_t speedHz = 500;
     uint64_t stepsNum = 4000;
 
     while(1){    
