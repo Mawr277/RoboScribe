@@ -159,11 +159,59 @@ def bounding_box(punkty):
     ys = [p[1] for p in punkty]
     return min(xs), max(xs), min(ys), max(ys)
         
+def ocena_bazy(punkty, Bx, By):
+    """Ocena bazy robota: zwraca największy kąt łokcia dla zadanego położenia bazy."""
+    max_v2 = -float("inf")
+    for x, y in punkty:
+        xl, yl = do_ukladu_lokalnego(x, y, Bx, By)
+        ik = kinematyka_odwrotna(xl, yl)
+        if ik is None:
+            return None
+        _, v2 = ik
+        if v2 > max_v2:
+            max_v2 = v2
+    return max_v2
+        
 def wyznacz_baze_robota(punkty):
-    xmin, xmax, ymin, _ = bounding_box(punkty)
-    Bx = xmax + 10   #modyfikacje gdzie robot ma rysować             #(xmin + xmax) / 2 + 20
-    By = ymin - 20   # korekcja baza ramienia =! os krokowych(baza robota)
-    return Bx, By
+    xmin, xmax, ymin, ymax = bounding_box(punkty)
+
+    min_x = xmax + 5
+    max_x = xmax + Rmax
+    min_y = ymin - Rmax
+    max_y = ymax + Rmax
+
+    najlepsze_Bx = min_x + 10
+    najlepsze_By = ymin - 20
+    najlepszy_v2 = ocena_bazy(punkty, najlepsze_Bx, najlepsze_By)
+    if najlepszy_v2 is None:
+        najlepszy_v2 = float("inf")
+
+    for krok in (10.0, 2.0, 0.5):
+        if najlepszy_v2 == float("inf"):
+            x_start, x_end = min_x, max_x
+            y_start, y_end = min_y, max_y
+        else:
+            x_start = max(min_x, najlepsze_Bx - krok * 5)
+            x_end = min(max_x, najlepsze_Bx + krok * 5)
+            y_start = max(min_y, najlepsze_By - krok * 5)
+            y_end = min(max_y, najlepsze_By + krok * 5)
+
+        x_candidates = np.arange(x_start, x_end + krok * 0.5, krok)
+        y_candidates = np.arange(y_start, y_end + krok * 0.5, krok)
+
+        for Bx in x_candidates:
+            for By in y_candidates:
+                v2 = ocena_bazy(punkty, Bx, By)
+                if v2 is None:
+                    continue
+                if v2 < najlepszy_v2:
+                    najlepszy_v2 = v2
+                    najlepsze_Bx, najlepsze_By = Bx, By
+
+    if najlepszy_v2 == float("inf"):
+        return min_x, min_y
+
+    return najlepsze_Bx, najlepsze_By
         
 def do_ukladu_lokalnego(x, y, Bx, By):
     return x - Bx, y - By

@@ -98,7 +98,7 @@ def main():
     """
     Główna funkcja uruchamiająca interpreter G-code i wizualizację.
     """
-    gcode_file = 'software/GCODEgen/test/L_output.gcode'
+    gcode_file = 'software/GCODEgen/test/PG1.gcode'
     
     try:
         all_points = parse_gcode(gcode_file)
