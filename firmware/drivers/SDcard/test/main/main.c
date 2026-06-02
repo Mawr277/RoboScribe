@@ -1,15 +1,14 @@
 #include <stdio.h>
+#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "SDcard.h"
 
 #define CMD_NUM 10
 
-void process(FILE *f, uint16_t commands_num){
-    for(int i = 0; i < commands_num; i++){
-        char line[MAX_CHAR_SIZE];
-        fgets(line, sizeof(line), f);
-
+void process(FILE *f){
+    char line[MAX_CHAR_SIZE];
+    while(fgets(line, sizeof(line), f)){
         // Usuń znak nowej linii
         char *pos = strchr(line, '\n');
         if (pos) {
@@ -45,26 +44,31 @@ void app_main(void)
 #endif
 
     // Writing to file
-    char *code[][CMD_NUM] = 
+    const char *code[] = 
     {
-        {"G21"},
-        {"G90"},
-        {"G28 X0 Y0"},
-        {"G0 Z10.0"},
-        {"G0 X20.0 Y20.0"},
-        {"G1 Z0.0 F1200"},
-        {"G1 X60.0 Y60.0"},
-        {"G1 X20.0 Y60.0"},
-        {"G0 Z15.0"},
-        {"M30"}
+        "G21",
+        "G90",
+        "G28 X0 Y0",
+        "G0 Z10.0",
+        "G0 X20.0 Y20.0",
+        "G1 Z0.0 F1200",
+        "G1 X60.0 Y60.0",
+        "G1 X20.0 Y60.0",
+        "G0 Z15.0",
+        "M30"
     };
     char data[MAX_CHAR_SIZE];
     const char *program = MOUNT_POINT"/program.gcode";
-    FILE *f = fopen(program, "w"); fclose(f); // Clear file
+    FILE *f = fopen(program, "w");  // Clear file
+    if (f == NULL) {
+        ESP_LOGE(SD_TAG, "Failed");
+        return;
+    }
+    fclose(f);
 
     for(int i = 0; i < CMD_NUM; i++){
         memset(data, 0, MAX_CHAR_SIZE);
-        snprintf(data, MAX_CHAR_SIZE, "%s\n", *code[i]); 
+        snprintf(data, MAX_CHAR_SIZE, "%s\n", code[i]); 
         ret = sd_write_file(program, data);
         if (ret != ESP_OK) {
                 return;
