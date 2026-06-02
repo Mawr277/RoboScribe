@@ -29,26 +29,31 @@
  */
 #define SERVO_LEDC_MODE           LEDC_LOW_SPEED_MODE
 #define SERVO_LEDC_DUTY_RES       LEDC_TIMER_13_BIT
-#define SERVO_DUTY_0              170.0f 
-#define SERVO_DUTY_180            1050.0f
-#define SERVO_LEDC_FREQUENCY      50
+#define LEDC_TIMER                LEDC_TIMER_0
+// #define SERVO_DUTY_0              170.0f 
+// #define SERVO_DUTY_180            1050.0f
+// #define SERVO_LEDC_FREQUENCY      50
+
+typedef struct {
+    uint8_t pin;
+    uint16_t freq;
+    ledc_channel_t channel;
+    uint16_t duty_0;
+    uint16_t duty_180;
+}servomotor;
 
 /**
  * @brief Inicjalizacja i konfiguracja serwa
  * 
- * @param ledc_timer typ stosowanego timeru dla serwa
- * @param ledc_channel numer kanału dla serwa
- * @param ledc_output_io numper pinu serwa
+ * @param servo parametry serwa
  */
-void servo_ledc_init(ledc_timer_t ledc_timer, 
-                    ledc_channel_t ledc_channel,
-                    int ledc_output_io);
+void servo_ledc_init(servomotor servo);
 
 /**
  * @brief Ustawienie pozycji serwa
  * 
- * @param servo_channel numer kanału serwa
+ * @param servo parametry serwa
  * @param angle kąt
  */
-void servo_set_position(ledc_channel_t servo_channel, 
+void servo_set_position(servomotor servo, 
                     float angle);

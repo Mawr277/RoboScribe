@@ -15,6 +15,7 @@
 #include <sys/stat.h>
 #include "esp_vfs_fat.h"
 #include "sdmmc_cmd.h"
+#include "esp_err.h"
 
 /**
  * @def MAX_CHAR_SIZE 
@@ -32,9 +33,6 @@
 #define PIN_NUM_MOSI  CONFIG_PIN_MOSI
 #define PIN_NUM_CLK   CONFIG_PIN_CLK
 #define PIN_NUM_CS    CONFIG_PIN_CS
-
-// Znacznik do wypisywania informacji na porcie szeregowym
-static const char *SD_TAG = "SDcard";
 
 /**
  * @brief Inicjalizuje parametry obsługi karty SD
@@ -74,5 +72,5 @@ esp_err_t sd_write_file(const char *path, char *data);
  * @param func wskaźnik do funkcji w której wykonywany będzie kod programu
  * @return esp_err_t 
  */
-esp_err_t sd_read_file(const char *path, void (*func)(FILE*, uint16_t));
+esp_err_t sd_read_file(const char *path, void (*func)(FILE*));
 //esp_err_t sd_deinit(sdmmc_card_t *card); //--- IGNORE ---

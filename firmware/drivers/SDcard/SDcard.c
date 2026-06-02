@@ -19,6 +19,8 @@
  */
 #include "SDcard.h"
 
+static const char *SD_TAG = "SDcard";
+
 esp_err_t card_init(sdmmc_card_t **card){
     esp_err_t ret;
 
@@ -103,14 +105,14 @@ esp_err_t sd_write_file(const char *path, char *data)
         return ESP_FAIL;
     }
     
-    fprintf(f, data);
+    fprintf(f, "%s", data);
     fclose(f);
     ESP_LOGI(SD_TAG, "File written");
 
     return ESP_OK;
 }
 
-esp_err_t sd_read_file(const char *path, void (*func)(FILE*, uint16_t))
+esp_err_t sd_read_file(const char *path, void (*func)(FILE*))
 {
     ESP_LOGI(SD_TAG, "Reading file %s", path);
     FILE *f = fopen(path, "r");
@@ -119,10 +121,8 @@ esp_err_t sd_read_file(const char *path, void (*func)(FILE*, uint16_t))
         return ESP_FAIL;
     }
     
-    uint16_t commands_num = count_instructions(f);
     fseek(f, 0, SEEK_SET);
-    ESP_LOGI(SD_TAG, "Number of lines: %d \n", commands_num);
-    func(f, commands_num);
+    func(f);
     fclose(f);
 
     return ESP_OK;
