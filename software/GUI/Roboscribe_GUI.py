@@ -13,7 +13,8 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QComboBox,
     QFileDialog, 
-    QTextEdit 
+    QTextEdit,
+    QScrollArea 
 )
 from PyQt6.QtGui import QIcon, QIntValidator
 from PyQt6.QtSvgWidgets import QSvgWidget
@@ -263,8 +264,17 @@ class MyApp(QMainWindow):
         left_layout.addStretch() 
         left_container = QWidget()
         left_container.setLayout(left_layout)
-        left_container.setMaximumWidth(400)
-        return left_container
+        
+        # Opcjonalnie usuń setMaximumWidth dla samego kontenera,
+        # przeniesiemy to na poziom ScrollArea
+        
+        # --- TWORZENIE QScrollArea ---
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True) # Pozwala kontenerowi dopasować się do szerokości
+        scroll_area.setWidget(left_container)
+        scroll_area.setMaximumWidth(420) # Dałem 420 zamiast 400, żeby suwak nie ucinał zawartości
+        
+        return scroll_area
 
     def log_message(self, message):
         """Dodaje wiadomość do pola tekstowego w GUI oraz drukuje w konsoli."""
