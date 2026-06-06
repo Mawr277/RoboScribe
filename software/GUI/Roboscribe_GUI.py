@@ -1,3 +1,13 @@
+## @file Roboscribe_GUI.py
+#  @author Wit Fornalik (wit.fornalik@gmail.com)
+#  @brief Główny moduł interfejsu graficznego (GUI) dla aplikacji Roboscribe.
+#  @details Moduł zarządza oknem aplikacji, przyjmuje dane od użytkownika, 
+#  steruje modułami generacji SVG i GCODE oraz komunikuje się z robotem (ESP32) po sieci HTTP.
+#  Wykorzystane biblioteki: PyQt6, requests, urllib.
+#  @version 1.00
+#  @date 2026-06-06
+#  @copyright Copyright (c) 2026
+
 import sys
 import os
 import ctypes
@@ -30,6 +40,11 @@ APP_ID = 'roboscribe.gui'
 DEFAULT_WINDOW_SIZE = (1200,1000)
 
 def launch_app(Create_SVG_logic, Create_GCODE_logic):
+    """!
+    @brief Uruchamia główną pętlę aplikacji interfejsu graficznego.
+    @param Create_SVG_logic Funkcja zewnętrzna generująca plik SVG na podstawie tekstu.
+    @param Create_GCODE_logic Funkcja zewnętrzna konwertująca plik SVG na GCODE.
+    """
     myappid = APP_ID
     app = QApplication(sys.argv)
 
@@ -40,7 +55,6 @@ def launch_app(Create_SVG_logic, Create_GCODE_logic):
         with open(qss_file, "r") as f:
             app.setStyleSheet(f.read())
     
-    #zeby dzialalo na linux a
     if sys.platform == 'win32':
         try:
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
@@ -52,13 +66,25 @@ def launch_app(Create_SVG_logic, Create_GCODE_logic):
     sys.exit(app.exec())
 
 def add_header(parent_layout, text):
+    """!
+    @brief Dodaje sformatowany nagłówek tekstowy do podanego układu (layoutu).
+    @param parent_layout Układ, do którego zostanie dodany nagłówek.
+    @param text Tekst nagłówka.
+    @return Zwraca utworzony obiekt QLabel.
+    """
     label = QLabel(text)
     label.setObjectName("appTitle") 
     parent_layout.addWidget(label)
     return label
 
 def add_line_edit(parent_layout, label_text, placeholder=""):
-    #element typu line_edit
+    """!
+    @brief Dodaje pole tekstowe (QLineEdit) z etykietą do podanego układu.
+    @param parent_layout Układ, do którego dodany zostanie element.
+    @param label_text Tekst etykiety wyświetlanej obok pola.
+    @param placeholder Opcjonalny tekst podpowiedzi w polu (domyślnie pusto).
+    @return Zwraca utworzony obiekt QLineEdit.
+    """
     label = QLabel(label_text)
     line_edit = QLineEdit()
     line_edit.setPlaceholderText(placeholder)
@@ -71,13 +97,18 @@ def add_line_edit(parent_layout, label_text, placeholder=""):
     return line_edit
 
 def add_combo_box(parent_layout, label_text, items):
-    #element typu combo_box
+    """!
+    @brief Dodaje rozwijaną listę (QComboBox) z etykietą.
+    @param parent_layout Układ, do którego dodany zostanie element.
+    @param label_text Tekst etykiety wyświetlanej obok listy.
+    @param items Lista krotek (tekst_wyświetlany, wartość_wewnętrzna).
+    @return Zwraca utworzony obiekt QComboBox.
+    """
     label = QLabel(label_text)
     combo = QComboBox()
     for text,data in items:
         combo.addItem(text, data)
 
-    #layout
     row_layout = QHBoxLayout()
     row_layout.addWidget(label)
     row_layout.addWidget(combo)
@@ -86,6 +117,13 @@ def add_combo_box(parent_layout, label_text, items):
     return combo
 
 def add_button(parent_layout,text, callback):
+    """!
+    @brief Dodaje przycisk wywołujący przypisaną mu funkcję.
+    @param parent_layout Układ, do którego dodany zostanie przycisk.
+    @param text Tekst wyświetlany na przycisku.
+    @param callback Metoda wywoływana po kliknięciu przycisku.
+    @return Zwraca utworzony obiekt QPushButton.
+    """
     button = QPushButton(text)
     button.clicked.connect(callback)
     parent_layout.addWidget(button)
@@ -93,6 +131,15 @@ def add_button(parent_layout,text, callback):
     return button
 
 def add_folder_selection(parent_layout, label_text, initial_path, button_text, callback):
+    """!
+    @brief Dodaje sekcję wyboru folderu (etykieta, pole ze ścieżką i przycisk).
+    @param parent_layout Układ, do którego dodany zostanie element.
+    @param label_text Tekst etykiety.
+    @param initial_path Domyślna ścieżka wpisywana do pola.
+    @param button_text Tekst wyświetlany na przycisku.
+    @param callback Funkcja wywoływana po wciśnięciu przycisku.
+    @return Zwraca utworzone pole tekstowe (tylko do odczytu) reprezentujące ścieżkę.
+    """
     label = QLabel(label_text)
     line_edit = QLineEdit(initial_path)
     line_edit.setReadOnly(True) 
@@ -106,7 +153,19 @@ def add_folder_selection(parent_layout, label_text, initial_path, button_text, c
     return line_edit
 
 class MyApp(QMainWindow):
+    """!
+    @brief Główna klasa okna aplikacji Roboscribe.
+    @details Klasa ta dziedziczy po QMainWindow i zarządza całym układem interfejsu 
+    użytkownika (lewy panel sterowania, prawy panel podglądu SVG). Odpowiada także za 
+    obsługę zdarzeń i komunikację po sieci z modułem ESP32 robota.
+    """
+
     def __init__(self, function1, function2):
+        """!
+        @brief Konstruktor głównego okna aplikacji.
+        @param function1 Referencja do funkcji generującej SVG.
+        @param function2 Referencja do funkcji generującej GCODE.
+        """
         super().__init__()
 
         # funkcje
@@ -124,6 +183,9 @@ class MyApp(QMainWindow):
         self.setup_ui()
 
     def setup_window(self):
+        """!
+        @brief Ustawia podstawowe parametry okna (tytuł, rozmiar, ikona).
+        """
         #okno
         self.setWindowTitle(APP_TITLE)
         self.resize(*DEFAULT_WINDOW_SIZE)
@@ -134,7 +196,9 @@ class MyApp(QMainWindow):
             self.setWindowIcon(QIcon(icon_path))
 
     def setup_ui(self):
-
+        """!
+        @brief Inicjalizuje główny podział okna na panel boczny i podgląd SVG.
+        """
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
@@ -152,6 +216,10 @@ class MyApp(QMainWindow):
         main_layout.addWidget(self.svg_widget,3)
 
     def left_panel(self):
+        """!
+        @brief Generuje lewy panel sterowania aplikacją zawierający wszystkie formularze i przyciski.
+        @return Zwraca obszar przewijania (QScrollArea) zawierający pełny układ panelu bocznego.
+        """
         left_layout = QVBoxLayout()
 
         add_header(left_layout, "ROBOSCRIBE")
@@ -276,6 +344,10 @@ class MyApp(QMainWindow):
         return scroll_area
 
     def log_message(self, message):
+        """!
+        @brief Dodaje podaną wiadomość do wewnętrznej konsoli z logami w GUI.
+        @param message Treść komunikatu do wyświetlenia.
+        """
         self.log_console.append(message)
         
         #automatyczne przewijanie na sam dół
@@ -283,13 +355,19 @@ class MyApp(QMainWindow):
         scrollbar.setValue(scrollbar.maximum())
 
     def select_working_folder(self):
+        """!
+        @brief Otwiera okno dialogowe pozwalające użytkownikowi wybrać docelowy folder zapisu danych.
+        """
         folder = QFileDialog.getExistingDirectory(self, "Wybierz folder zapisu", self.working_directory)
         if folder:
             self.working_directory = folder
             self.folder_display.setText(folder) 
 
     def on_Gen_SVG_button_click(self):
-
+        """!
+        @brief Pobiera dane wejściowe, generuje plik SVG oraz wyświetla go na prawym panelu GUI.
+        @return Zwraca pełną ścieżkę do wygenerowanego pliku SVG.
+        """
         text = self.text_input.text()
         raw_w = self.w_input.text()
         raw_h = self.h_input.text()
@@ -319,6 +397,9 @@ class MyApp(QMainWindow):
         return full_path
 
     def on_Gen_GCODE_button_click(self):
+        """!
+        @brief Wykorzystuje wygenerowany plik SVG do stworzenia pliku ze ścieżką GCODE dla robota.
+        """
         path_to_svg = self.on_Gen_SVG_button_click()
 
         raw_scale = self.scale.text()
@@ -338,12 +419,17 @@ class MyApp(QMainWindow):
             self.log_message(f"[BŁĄD] Wystąpił błąd podczas konwersji: {e}")
 
     def get_esp_url(self):
-        """Zwraca bazowy adres URL na podstawie wpisanego IP."""
+        """!
+        @brief Konstruuje i zwraca bazowy adres URL serwera ESP32.
+        @return Sformatowany adres IP rozpoczynający się od 'http://'.
+        """
         ip = self.ip_input.text().strip()
         return f"http://{ip}"
 
     def on_upload_click(self):
-        """Wysyła ostatnio wygenerowany plik GCODE na serwer ESP32."""
+        """!
+        @brief Wysyła ostatnio wygenerowany z aplikacji plik GCODE na serwer ESP32.
+        """
         if not hasattr(self, 'last_gcode_path') or not os.path.exists(self.last_gcode_path):
             self.log_message("[BŁĄD] Najpierw wygeneruj plik GCODE!")
             return
@@ -362,7 +448,10 @@ class MyApp(QMainWindow):
             self.log_message(f"[BŁĄD POŁĄCZENIA] podczas wysyłania: {e}")
 
     def set_robot_state(self, state_val):
-        """Wysyła polecenie zmiany stanu do robota (0: STOP, 1: START, 2: PAUSE)."""
+        """!
+        @brief Wysyła polecenie zmiany stanu operacyjnego robota.
+        @param state_val Kod statusu (0: STOP, 1: START, 2: PAUSE).
+        """
         url = f"{self.get_esp_url()}/state"
         payload = {'statusCode': state_val}
         
@@ -381,7 +470,9 @@ class MyApp(QMainWindow):
             self.log_message(f"[BŁĄD POŁĄCZENIA] podczas zmiany stanu: {e}")
 
     def on_manual_control_click(self):
-        """Pobiera dane z pól tekstowych i wysyła komendę sterowania ręcznego do ESP32."""
+        """!
+        @brief Zczytuje dane kinematyczne z interfejsu i przekazuje komendę ruchu ręcznego do robota.
+        """
         url = f"{self.get_esp_url()}/controls"
         
         payload = {
@@ -400,7 +491,9 @@ class MyApp(QMainWindow):
             self.log_message(f"[BŁĄD KOMUNIKACJI] podczas wysyłania pozycji: {e}")
 
     def on_delete_file_click(self):
-        """Wysyła prośbę o usunięcie pliku GCODE z pamięci robota."""
+        """!
+        @brief Wysyła zapytanie HTTP z żądaniem usunięcia określonego pliku z wewnętrznej pamięci ESP32.
+        """
         filename = self.target_file_input.text().strip()
         
         if not filename:
@@ -417,7 +510,9 @@ class MyApp(QMainWindow):
             self.log_message(f"[BŁĄD] usuwania pliku: {e}")
 
     def toggle_accel_data(self):
-        """Włącza lub wyłącza ciągłe pobieranie danych z akcelerometru."""
+        """!
+        @brief Przełącza tryb ciągłego pobierania danych (timer) z wbudowanego akcelerometru maszyny.
+        """
         if self.accel_timer.isActive():
             self.accel_timer.stop()
             self.btn_get_data.setText("Start pobierania ciągłego (Akcelerometr)")
@@ -429,7 +524,9 @@ class MyApp(QMainWindow):
             self.log_message("Rozpoczęto ciągły odczyt z akcelerometru...")
 
     def fetch_accel_data(self):
-        """Pobiera dane w tle ."""
+        """!
+        @brief Ciche pobieranie danych w tle podpięte pod systemowy QTimer, unikając zapychania konsoli.
+        """
         url = f"{self.get_esp_url()}/accel_data"
         try:
             #timeout 1s
@@ -452,7 +549,9 @@ class MyApp(QMainWindow):
             self.log_message("[BŁĄD] Utracono połączenie z akcelerometrem. Odczyt zatrzymany.")
 
     def on_upload_custom_file_click(self):
-        """Otwiera okno dialogowe, pozwala wybrać plik i wysyła go na ESP32."""
+        """!
+        @brief Otwiera natywne okno wyboru pliku i umożliwia wysłanie dowolnego GCODE z PC do robota.
+        """
         #otwarcie okna wyboru pliku
         file_path, _ = QFileDialog.getOpenFileName(
             self,
