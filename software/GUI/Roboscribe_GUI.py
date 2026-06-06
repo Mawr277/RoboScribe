@@ -18,6 +18,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QIcon, QIntValidator
 from PyQt6.QtSvgWidgets import QSvgWidget
+from PyQt6.QtCore import QTimer
 from urllib.parse import parse_qs
 
 LISTA_CZCIONEK = [
@@ -200,14 +201,14 @@ class MyApp(QMainWindow):
         self.ip_input = add_line_edit(left_layout, "IP ESP32:", "192.168.0.117")
         self.ip_input.setText("192.168.0.117") # Domyślna wartość z Twojego skryptu
 
-        # DODAJ TĘ LINIJKĘ: Pole do wpisywania nazwy pliku docelowego
+        #pole do wpisywania nazwy pliku docelowego
         self.target_file_input = add_line_edit(left_layout, "Plik w ESP32 (do startu/usunięcia):", "np: output.gcode")
 
-        # Przycisk wysyłania na serwer
+        #przycisk wysyłania na serwer
         self.Upload_button = add_button(left_layout, "Wyślij WYGENEROWANY GCODE", self.on_upload_click)
         self.Upload_custom_button = add_button(left_layout, "Wybierz plik z komputera i wyślij", self.on_upload_custom_file_click)
 
-        # Przyciski sterowania stanem (w jednym rzędzie)
+        #przyciski sterowania stanem
         row_state = QHBoxLayout()
         self.btn_start = QPushButton("START")
         self.btn_pause = QPushButton("PAUSE")
@@ -218,13 +219,11 @@ class MyApp(QMainWindow):
         row_state.addWidget(self.btn_stop)
         left_layout.addLayout(row_state)
 
-        # Podpięcie akcji do przycisków sterowania
-        # Używamy wartości enum ze skryptu interface.py: STOP=0, START=1, PAUSE=2
         self.btn_start.clicked.connect(lambda: self.set_robot_state(1))
         self.btn_pause.clicked.connect(lambda: self.set_robot_state(2))
         self.btn_stop.clicked.connect(lambda: self.set_robot_state(0))
 
-        # 1. STEROWANIE RĘCZNE
+        #sterowanie ręczne
         line3 = QLabel("<hr>")
         left_layout.addWidget(line3)
         add_header(left_layout, "STEROWANIE RĘCZNE")
@@ -246,9 +245,13 @@ class MyApp(QMainWindow):
 
         self.accel_label = QLabel("Akcelerometr: Brak danych")
         left_layout.addWidget(self.accel_label)
-        self.btn_get_data = add_button(left_layout, "Odczytaj akcelerometr", self.on_get_data_click)
+        self.btn_get_data = add_button(left_layout, "Start pobierania danych z akcelerometru", self.toggle_accel_data)
 
-        # 3. KONSOLA LOGÓW SERWERA (Nowa sekcja)
+        # Inicjalizacja timera
+        self.accel_timer = QTimer(self)
+        self.accel_timer.timeout.connect(self.fetch_accel_data)
+
+        #log console
         line5 = QLabel("<hr>")
         left_layout.addWidget(line5)
         add_header(left_layout, "LOGI SYSTEMOWE")
@@ -256,8 +259,6 @@ class MyApp(QMainWindow):
         self.log_console = QTextEdit()
         self.log_console.setReadOnly(True)
         self.log_console.setMinimumHeight(120)
-        # Styl, aby wyglądało trochę jak konsola
-        self.log_console.setStyleSheet("background-color: #f0f0f0; border: 1px solid #ccc; font-family: monospace;")
         left_layout.addWidget(self.log_console)
 
         #layout
@@ -265,23 +266,19 @@ class MyApp(QMainWindow):
         left_container = QWidget()
         left_container.setLayout(left_layout)
         
-        # Opcjonalnie usuń setMaximumWidth dla samego kontenera,
-        # przeniesiemy to na poziom ScrollArea
         
-        # --- TWORZENIE QScrollArea ---
+        #scroll area
         scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True) # Pozwala kontenerowi dopasować się do szerokości
+        scroll_area.setWidgetResizable(True)
         scroll_area.setWidget(left_container)
-        scroll_area.setMaximumWidth(420) # Dałem 420 zamiast 400, żeby suwak nie ucinał zawartości
+        scroll_area.setMaximumWidth(420) 
         
         return scroll_area
 
     def log_message(self, message):
-        """Dodaje wiadomość do pola tekstowego w GUI oraz drukuje w konsoli."""
-        print(message)  # Zachowujemy też w standardowej konsoli, w razie potrzeby
         self.log_console.append(message)
         
-        # Automatyczne przewijanie na sam dół
+        #automatyczne przewijanie na sam dół
         scrollbar = self.log_console.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
 
@@ -293,7 +290,6 @@ class MyApp(QMainWindow):
 
     def on_Gen_SVG_button_click(self):
 
-        # Pobranie danych z pól
         text = self.text_input.text()
         raw_w = self.w_input.text()
         raw_h = self.h_input.text()
@@ -304,7 +300,7 @@ class MyApp(QMainWindow):
         h = int(raw_h) if raw_h else 0
 
         if not raw_name: 
-            raw_name = "output" #domyślna nazwa
+            raw_name = "output"     #domyślna nazwa
             
         if not raw_name.lower().endswith(".svg"):
             file_name = raw_name + ".svg"
@@ -360,7 +356,6 @@ class MyApp(QMainWindow):
             with open(self.last_gcode_path, "rb") as f:
                 file_data = f.read()
             
-            # Używamy timeout=5, aby GUI nie zawiesiło się na zawsze, jeśli ESP32 jest offline
             response = requests.post(url, data=file_data, timeout=5)
             self.log_message(f"Odpowiedź serwera: {response.text}")
         except requests.exceptions.RequestException as e:
@@ -371,7 +366,6 @@ class MyApp(QMainWindow):
         url = f"{self.get_esp_url()}/state"
         payload = {'statusCode': state_val}
         
-        # Jeśli komenda to START (1), pobieramy nazwę pliku z pola tekstowego
         if state_val == 1:
             filename = self.target_file_input.text().strip()
             if not filename:
@@ -390,7 +384,6 @@ class MyApp(QMainWindow):
         """Pobiera dane z pól tekstowych i wysyła komendę sterowania ręcznego do ESP32."""
         url = f"{self.get_esp_url()}/controls"
         
-        # Jeśli użytkownik zostawi puste pole, domyślnie wysyłamy "0"
         payload = {
             'base_angle': self.base_angle.text() or "0",
             'arm_angle': self.arm_angle.text() or "0",
@@ -423,14 +416,25 @@ class MyApp(QMainWindow):
         except requests.exceptions.RequestException as e:
             self.log_message(f"[BŁĄD] usuwania pliku: {e}")
 
-    def on_get_data_click(self):
-        """Pobiera dane z akcelerometru robota i wyświetla je w interfejsie."""
+    def toggle_accel_data(self):
+        """Włącza lub wyłącza ciągłe pobieranie danych z akcelerometru."""
+        if self.accel_timer.isActive():
+            self.accel_timer.stop()
+            self.btn_get_data.setText("Start pobierania ciągłego (Akcelerometr)")
+            self.log_message("Zatrzymano odczyt z akcelerometru.")
+        else:
+            #Zapytanie co 500ms
+            self.accel_timer.start(500) 
+            self.btn_get_data.setText("Stop pobierania (Akcelerometr)")
+            self.log_message("Rozpoczęto ciągły odczyt z akcelerometru...")
+
+    def fetch_accel_data(self):
+        """Pobiera dane w tle ."""
         url = f"{self.get_esp_url()}/accel_data"
         try:
-            self.log_message(f"Pobieranie danych z {url}...")
-            response = requests.get(url, timeout=5)
+            #timeout 1s
+            response = requests.get(url, timeout=1) 
             
-            # Parsowanie odpowiedzi (format: x_accel=X&y_accel=Y&z_accel=Z)
             parsed_data = parse_qs(response.text)
             
             x = parsed_data.get('x_accel', ['0'])[0]
@@ -439,15 +443,17 @@ class MyApp(QMainWindow):
             
             info = f"Akcelerometr: X={x}, Y={y}, Z={z}"
             self.accel_label.setText(info)
-            self.log_message(f"Odczytano dane: {info}")
             
-        except requests.exceptions.RequestException as e:
-            self.log_message(f"[BŁĄD] pobierania danych z akcelerometru: {e}")
-            self.accel_label.setText("Akcelerometr: Błąd połączenia")
+        except requests.exceptions.RequestException:
+            #zatrzymanie w razie błedu
+            self.accel_timer.stop()
+            self.btn_get_data.setText("Start pobierania danych z akcelerometru")
+            self.accel_label.setText("Akcelerometr: Błąd połączenia (Zatrzymano)")
+            self.log_message("[BŁĄD] Utracono połączenie z akcelerometrem. Odczyt zatrzymany.")
 
     def on_upload_custom_file_click(self):
         """Otwiera okno dialogowe, pozwala wybrać plik i wysyła go na ESP32."""
-        # Otwarcie okna dialogowego do wyboru pliku
+        #otwarcie okna wyboru pliku
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Wybierz plik GCODE do wysłania",
@@ -455,17 +461,15 @@ class MyApp(QMainWindow):
             "GCODE Files (*.gcode);;Wszystkie pliki (*)"
         )
 
-        # Jeśli użytkownik kliknął "Anuluj" lub zamknął okno, file_path będzie puste
         if not file_path:
             return
 
-        # Przygotowanie nazwy pliku i adresu URL
         filename = os.path.basename(file_path)
         url = f"{self.get_esp_url()}/upload/{filename}"
 
         try:
             self.log_message(f"Wysyłanie wybranego pliku {filename} na {url}...")
-            # Odczytanie zawartości wybranego pliku z dysku
+            #odczytanie zawartości wybranego pliku z dysku
             with open(file_path, "rb") as f:
                 file_data = f.read()
             
