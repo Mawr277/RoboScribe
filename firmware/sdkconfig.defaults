@@ -1,0 +1,7 @@
+# Default Wi-Fi Connection Settings
+CONFIG_EXAMPLE_WIFI_SSID="SKAR"
+CONFIG_EXAMPLE_WIFI_PASSWORD="kristalA152-+0"
+
+# Long filename support
+CONFIG_FATFS_LFN_HEAP=y
+CONFIG_FATFS_MAX_LFN=255
