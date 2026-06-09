@@ -43,3 +43,9 @@
         margin-bottom: 10px;
         qproperty-alignment: 'AlignCenter';
     }
+
+    QTextEdit{
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
+        font-family: monospace;
+    }
