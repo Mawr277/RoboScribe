@@ -19,8 +19,6 @@
 extern "C" {
 #endif
 
-esp_err_t example_mount_storage(const char *base_path);
-
 esp_err_t start_file_server(const char *base_path);
 
 #ifdef __cplusplus
