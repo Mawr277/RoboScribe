@@ -20,8 +20,8 @@ import numpy as np
 import math
 
 
-L1 = 70.0   
-L2 = 70.0
+L1 = 80.0   
+L2 = 100.0
 Rmax = L1 + L2
 
 def probkowanie(path, rozdzielczosc):
@@ -333,7 +333,9 @@ def convert_svg_to_gcode(input_path, output_path, skala=1.0, rozdzielczosc=1.0):
 
     processor = SVGProcessor(rozdzielczosc=rozdzielczosc, skala=skala)
     
-    for element in svg.elements():
+    # Iteruj TYLKO po top-level elementach (nie po wszystkich)
+    # aby uniknąć przetwarzania elementów wewnątrz grup wielokrotnie
+    for element in svg:
         processor.przetwarzaj_element(element)
 
     try:

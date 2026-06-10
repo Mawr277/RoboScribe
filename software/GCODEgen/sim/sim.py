@@ -16,8 +16,8 @@ import re
 import math
 
 
-L1 = 70.0
-L2 = 70.0
+L1 = 80.0
+L2 = 100.0
 
 
 def forward_kinematics(theta1_deg, theta2_deg):
@@ -98,7 +98,7 @@ def main():
     """
     Główna funkcja uruchamiająca interpreter G-code i wizualizację.
     """
-    gcode_file = 'software/GCODEgen/test/PG1.gcode'
+    gcode_file = 'software/GUI/test/output.gcode'
     
     try:
         all_points = parse_gcode(gcode_file)
