@@ -30,7 +30,7 @@ class state(Enum):
 
 @dataclass
 class Controls:
-    base_angle: int = 0
+    base_angle: int = 90
     arm_angle: int = 0
     tool_angle: int = 0
     x_coord: int = 0
@@ -99,7 +99,7 @@ def upload_file(filename: str):
 # delete_file(example_file)
 # upload_file(example_file)
 
-# my_input = Controls();
-# manual_control(my_input)
+my_input = Controls();
+manual_control(my_input)
 
-get_data()
+# get_data()

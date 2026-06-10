@@ -33,6 +33,7 @@
 #include "robot_data.h"
 #include "SDcard.h"
 #include "servo.h"
+#include "stepper.h"
 
 #define CORE0   0
 #define CORE1   1

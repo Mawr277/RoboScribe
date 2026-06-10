@@ -244,6 +244,8 @@ esp_err_t manual_control_post_handler(httpd_req_t *req) {
     );
 
     if (res == 5){
+        xQueueSend(manual_mov_queue, &ctrl, pdMS_TO_TICKS(100));
+
         ESP_LOGI(TAG, "Parsed successfully: base=%d, arm=%d, tool=%d, x=%d, y=%d",
             ctrl.base_angle, 
             ctrl.arm_angle, 
