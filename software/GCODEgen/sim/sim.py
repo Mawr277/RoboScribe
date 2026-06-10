@@ -32,7 +32,7 @@ def forward_kinematics(theta1_deg, theta2_deg):
     Returns:
         tuple: Krotka zawierająca dwie krotki: ((elbow_x, elbow_y), (end_x, end_y)).
     """
-    #zamiana kątów z ludzkiego układu współrzędnych SVG na fizyczny układ robota
+    #zamiana kątów z maciejowego układu współrzędnych na SVG 
     theta1_deg = theta1_deg + 90
     theta2_deg = -theta2_deg 
     
@@ -98,7 +98,7 @@ def main():
     """
     Główna funkcja uruchamiająca interpreter G-code i wizualizację.
     """
-    gcode_file = 'software/GCODEgen/test/plik9.gcode'
+    gcode_file = 'software/GCODEgen/test/PG1.gcode'
     
     try:
         all_points = parse_gcode(gcode_file)
@@ -117,27 +117,26 @@ def main():
     ax.set_ylabel("Współrzędna Y")
     ax.grid(True)
 
-    # Rysowanie 
-    path_segments = []
-    current_segment_x = []
-    current_segment_y = []
+    # Rysowanie odwiedzonych punktów końcówki narzędzia
+    draw_x = []
+    draw_y = []
+    move_x = []
+    move_y = []
 
     for p in all_points:
+        world_x = p['end_local'][0] + p['base_pos'][0]
+        world_y = p['end_local'][1] + p['base_pos'][1]
         if p['is_drawing']:
-            world_x = p['end_local'][0] + p['base_pos'][0]
-            world_y = p['end_local'][1] + p['base_pos'][1]
-            current_segment_x.append(world_x)
-            current_segment_y.append(-world_y)  
+            draw_x.append(world_x)
+            draw_y.append(-world_y)
         else:
-            if current_segment_x:
-                path_segments.append((current_segment_x, current_segment_y))
-                current_segment_x, current_segment_y = [], []
-    if current_segment_x:
-        path_segments.append((current_segment_x, current_segment_y))
-    
-    for i, (px, py) in enumerate(path_segments):
-        label = 'Ścieżka narzędzia' if i == 0 else None
-        ax.plot(px, py, 'b-', lw=1.5, label=label)
+            move_x.append(world_x)
+            move_y.append(-world_y)
+
+    if draw_x:
+        ax.scatter(draw_x, draw_y, c='blue', s=12, label='Punkty rysowane', zorder=2)
+    if move_x:
+        ax.scatter(move_x, move_y, c='gray', s=8, alpha=0.5, label='Ruch bez rysowania', zorder=1)
 
     # Elementy ramienia robota do animacji
     link1, = ax.plot([], [], 'r-', lw=4, solid_capstyle='round', label='Ramię 1 (L1)')
