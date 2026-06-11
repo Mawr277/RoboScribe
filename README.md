@@ -6,7 +6,7 @@ Jest to robot który zmienia tekst napisany w aplikacji na fizyczny napis na tab
 **Główne możliwości robota:**
 * **✏️ Przetwarzanie danych na ruch:** Oprogramowanie automatycznie zamienia wpisany tekst na format wektorowy (SVG), a następnie generuje z niego instrukcje ścieżkowe (G-Code) zrozumiałe dla silników.
 * **🖥️ Wygodne sterowanie (GUI):** Intuicyjny interfejs graficzny na PC pozwala na tworzenie plików dla robota i jego łatwą obsługę i sterowanie.
-**📡 Komunikacja Wi-Fi:** Połączenie z robotem odbywa się bezprzewodowo, co pozwala na wygodne sterowanie urządzeniem i przesyłanie poleceń bezpośrednio z poziomu aplikacji na komputerze.
+* **📡 Komunikacja Wi-Fi:** Połączenie z robotem odbywa się bezprzewodowo, co pozwala na wygodne sterowanie urządzeniem i przesyłanie poleceń bezpośrednio z poziomu aplikacji na komputerze.
 * **⚙️ Precyzja kreślenia:** Zaawansowana kontrola silników krokowych dba o dokładne pozycjonowanie na tablicy, a serwomechanizm płynnie podnosi i opuszcza pisak.
 * **⚖️ Telemetria:** Wykorzystanie czujnika MPU6050 (akcelerometr) umożliwia bieżące monitorowanie orientacji urządzenia podczas pracy.
 
