@@ -5,6 +5,7 @@
  * z karty SD stosując interfejs SPI.
  * @version 1.0
  * @date 2026-01-13
+ * @ingroup drivers
  * 
  * @copyright Copyright (c) 2026
  * 

@@ -1,9 +1,10 @@
 /**
  * @file stepper.c
  * @author Maciej Nowicki (maciejnowicki1234@gmail.com)
- * @brief Stepper motor control driver using recommended rmt implementation
+ * @brief Implementacja sterowania silnikami krokowymi z użyciem modułu RMT
  * @version 0.1
- * @date 2026-03=06
+ * @date 2026-03-06
+ * @ingroup drivers
  * 
  * @copyright Copyright (c) 2026
  * 

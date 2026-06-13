@@ -1,22 +1,16 @@
 /**
  * @file stepperMotorEncoder.c
- * @brief ESPIDF stepper motor rmt encoder example code
+ * @brief Enkoder rmt dla silników krokowych
  * @version 0.1
  * @date 2026-03-06
+ * @ingroup drivers
  * 
  * @copyright Copyright (c) 2026
  * 
  */
-#include "esp_check.h"
 #include "stepperMotorEncoder.h"
           
 static const char *TAG = "stepper_motor_encoder";
-
-typedef struct {
-    rmt_encoder_t base;
-    rmt_encoder_handle_t copy_encoder;
-    uint32_t resolution;
-} rmt_stepper_uniform_encoder_t;
 
 static size_t rmt_encode_stepper_motor_uniform(rmt_encoder_t *encoder, rmt_channel_handle_t channel, const void *primary_data, size_t data_size, rmt_encode_state_t *ret_state)
 {

@@ -1,58 +1,25 @@
-/*
- * SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Unlicense OR CC0-1.0
+/**
+ * @file file_server.c
+ * @author Maciej Nowicki (maciejnowicki1234@gmail.com)
+ * @brief Implementacja serwera HTTP i obsługi zapytań przez WiFi
+ * @version 0.1
+ * @date 2026-06-10
+ * @ingroup wirelessComms
+ * 
+ * @copyright Copyright (c) 2026
+ * 
  */
-/* HTTP File Server Example
-
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
-
-#include <stdio.h>
-#include <string.h>
-#include <sys/param.h>
-#include <sys/unistd.h>
-#include <sys/stat.h>
-#include <dirent.h>
-
-#include "esp_err.h"
-#include "esp_log.h"
-#include "esp_vfs.h"
-#include "esp_http_server.h"
-
-#include "robot_data.h"
-
-/* Max length a file path can have on storage */
-#define FILE_PATH_MAX (ESP_VFS_PATH_MAX + CONFIG_SPIFFS_OBJ_NAME_LEN)
-
-/* Max size of an individual file. Make sure this
- * value is same as that set in upload_script.html */
-#define MAX_FILE_SIZE   (200*1024) // 200 KB
-#define MAX_FILE_SIZE_STR "200KB"
-
-/* Scratch buffer size */
-#define SCRATCH_BUFSIZE  8192
-
-#define DATA_BUFSIZE 128
-
-struct file_server_data {
-    /* Base path of file storage */
-    char base_path[ESP_VFS_PATH_MAX + 1];
-
-    /* Scratch buffer for temporary storage during file transfer */
-    char scratch[SCRATCH_BUFSIZE];
-};
+#include "file_server.h"
 
 static const char *TAG = "file_server";
 
-/* Send HTTP response with a run-time generated html consisting of
- * a list of all files and folders under the requested path.
- * In case of SPIFFS this returns empty list when path is any
- * string other than '/', since SPIFFS doesn't support directories */
+/**
+ * @brief Wysyła odpowiedź HTTP z dynamicznie generowanym kodem HTML zawierającym listę plików i folderów.
+ * 
+ * @param req Wskaźnik na strukturę żądania HTTP.
+ * @param dirpath Ścieżka do przeszukiwanego katalogu.
+ * @return esp_err_t ESP_OK w przypadku sukcesu lub ESP_FAIL w przypadku błędu.
+ */
 static esp_err_t http_resp_dir(httpd_req_t *req, const char *dirpath)
 {
     char entrypath[FILE_PATH_MAX];
@@ -95,7 +62,13 @@ static esp_err_t http_resp_dir(httpd_req_t *req, const char *dirpath)
 #define IS_FILE_EXT(filename, ext) \
     (strcasecmp(&filename[strlen(filename) - sizeof(ext) + 1], ext) == 0)
 
-/* Set HTTP response content type according to file extension */
+/**
+ * @brief Ustawia typ zawartości (Content-Type) odpowiedzi HTTP na podstawie rozszerzenia pliku.
+ * 
+ * @param req Wskaźnik na strukturę żądania HTTP.
+ * @param filename Nazwa pliku z rozszerzeniem.
+ * @return esp_err_t Zwraca wynik ustawiania nagłówka HTTP z odpowiednim typem MIME.
+ */
 static esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filename)
 {
     if (IS_FILE_EXT(filename, ".pdf")) {
@@ -114,8 +87,15 @@ static esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filena
     return httpd_resp_set_type(req, "text/plain");
 }
 
-/* Copies the full path into destination buffer and returns
- * pointer to path (skipping the preceding base path) */
+/**
+ * @brief Kopiuje pełną ścieżkę do bufora docelowego i zwraca wskaźnik na ścieżkę, z pominięciem ścieżki bazowej.
+ * 
+ * @param dest Bufor docelowy, w którym zostanie zapisana pełna ścieżka.
+ * @param base_path Ścieżka bazowa serwera plików.
+ * @param uri Adres URI pochodzący z żądania.
+ * @param destsize Rozmiar bufora docelowego.
+ * @return const char* Wskaźnik na wyodrębnioną ścieżkę lub NULL, jeśli ścieżka nie zmieści się w buforze.
+ */
 static const char* get_path_from_uri(char *dest, const char *base_path, const char *uri, size_t destsize)
 {
     const size_t base_pathlen = strlen(base_path);
@@ -143,7 +123,13 @@ static const char* get_path_from_uri(char *dest, const char *base_path, const ch
     return dest + base_pathlen;
 }
 
-esp_err_t state_post_handler(httpd_req_t *req) {
+/**
+ * @brief Handler dla żądań POST ustawiających stan maszyny (START, STOP, PAUSE).
+ * 
+ * @param req Wskaźnik na strukturę żądania HTTP.
+ * @return esp_err_t ESP_OK po pomyślnym zaktualizowaniu stanu lub kod błędu w przypadku problemów.
+ */
+static esp_err_t state_post_handler(httpd_req_t *req) {
     char buf[DATA_BUFSIZE];
     int size;
 
@@ -214,7 +200,13 @@ esp_err_t state_post_handler(httpd_req_t *req) {
     return ESP_FAIL;
 }
 
-esp_err_t manual_control_post_handler(httpd_req_t *req) {
+/**
+ * @brief Handler dla żądań POST odbierający dane do sterowania ręcznego ramieniem robota.
+ * 
+ * @param req Wskaźnik na strukturę żądania HTTP.
+ * @return esp_err_t ESP_OK po udanym odebraniu danych i przesłaniu do kolejki, w przeciwnym razie ESP_FAIL.
+ */
+static esp_err_t manual_control_post_handler(httpd_req_t *req) {
     /// Variables for angles: base, arm, tool, and coordinates: x, y
     mov_controls ctrl = {0};
     char buf[DATA_BUFSIZE];
@@ -262,7 +254,13 @@ esp_err_t manual_control_post_handler(httpd_req_t *req) {
     return ESP_FAIL;
 }
 
-esp_err_t accel_vector_get_handler(httpd_req_t *req){
+/**
+ * @brief Handler dla żądań GET zwracający obecne pomiary wektora przyspieszenia z akcelerometru.
+ * 
+ * @param req Wskaźnik na strukturę żądania HTTP.
+ * @return esp_err_t ESP_OK po pomyślnym przesłaniu danych do klienta lub ESP_FAIL w przypadku błędu.
+ */
+static esp_err_t accel_vector_get_handler(httpd_req_t *req){
     accel_vector *data = (accel_vector*)req->user_ctx;
     if (data == NULL) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Missing data");
@@ -293,7 +291,12 @@ esp_err_t accel_vector_get_handler(httpd_req_t *req){
     return ESP_OK;
 }
 
-/* Handler to download a file kept on the server */
+/**
+ * @brief Handler dla żądań GET umożliwiający pobieranie plików znajdujących się na serwerze.
+ * 
+ * @param req Wskaźnik na strukturę żądania HTTP.
+ * @return esp_err_t ESP_OK po udanym pobraniu pliku, w przeciwnym razie ESP_FAIL.
+ */
 static esp_err_t download_get_handler(httpd_req_t *req)
 {
     char filepath[FILE_PATH_MAX];
@@ -372,7 +375,12 @@ static esp_err_t download_get_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
-/* Handler to upload a file onto the server */
+/**
+ * @brief Handler dla żądań POST odpowiedzialny za wgrywanie plików (upload) na serwer urządzenia.
+ * 
+ * @param req Wskaźnik na strukturę żądania HTTP.
+ * @return esp_err_t ESP_OK po udanym zapisaniu pliku, w przeciwnym razie ESP_FAIL.
+ */
 static esp_err_t upload_post_handler(httpd_req_t *req)
 {
     char filepath[FILE_PATH_MAX];
@@ -492,7 +500,12 @@ static esp_err_t upload_post_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
-/* Handler to delete a file from the server */
+/**
+ * @brief Handler dla żądań POST odpowiedzialny za usuwanie plików (delete) znajdujących się na serwerze.
+ * 
+ * @param req Wskaźnik na strukturę żądania HTTP.
+ * @return esp_err_t ESP_OK po poprawnym skasowaniu pliku, w przeciwnym razie ESP_FAIL.
+ */
 static esp_err_t delete_post_handler(httpd_req_t *req)
 {
     char filepath[FILE_PATH_MAX];
@@ -539,7 +552,6 @@ static esp_err_t delete_post_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
-/* Function to start the file server */
 esp_err_t start_file_server(const char *base_path)
 {
     static struct file_server_data *server_data = NULL;

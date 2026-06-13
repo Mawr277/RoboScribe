@@ -13,32 +13,21 @@
 #include "driver/ledc.h"
 #include "esp_err.h"
 
-/** 
- * @def SERVO_DUTY_0
- * @brief Współczynnik wypełnienia dla pozycji 0 stopni
- * ustawiana po badaniu empirycznym, by można było sterować serwem
- * przy pomocy esp32 bez zastosowania przetwornika poziomów logicznych.
- * \n Wykorzystywana przy przeliczaniu kąta na współczynnik wypełnienia (duty cycle).
- */
-/** 
- * @def SERVO_DUTY_180
- * @brief Współczynnik wypełnienia dla pozycji 180 stopni
- * ustawiana po badaniu empirycznym, by można było sterować serwem
- * przy pomocy esp32 bez zastosowania przetwornika poziomów logicznych.
- * \n Wykorzystywana przy przeliczaniu kąta na współczynnik wypełnienia (duty cycle).
- */
 #define SERVO_LEDC_MODE           LEDC_LOW_SPEED_MODE
 #define SERVO_LEDC_DUTY_RES       LEDC_TIMER_13_BIT
 #define LEDC_TIMER                LEDC_TIMER_0
-// #define SERVO_DUTY_0              170.0f 
-// #define SERVO_DUTY_180            1050.0f
-// #define SERVO_LEDC_FREQUENCY      50
 
+/// @brief Struktura z danymi do obsługi serwa
 typedef struct {
+    /// Numer pinu
     uint8_t pin;
+    /// Częstotliwośc sterującego sygnału PWM            
     uint16_t freq;
-    ledc_channel_t channel;
-    uint16_t duty_0;
+    /// Kanał mikrokontrolera dla serwa          
+    ledc_channel_t channel; 
+    /// Bitowa długość stanu wysokiego dla pozycji 0 stopni
+    uint16_t duty_0;  
+    /// itowa długość stanu wysokiego dla pozycji 180 stopni 
     uint16_t duty_180;
 }servomotor;
 

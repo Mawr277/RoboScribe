@@ -1,9 +1,10 @@
 /**
  * @file stepper.h
  * @author Maciej Nowicki (maciejnowicki1234@gmail.com)
- * @brief Header file for stepper motor driver
+ * @brief Plik nagłówkowy sterownika silników krokowych
  * @version 1.0
  * @date 2026-03-06
+ * @ingroup drivers
  * 
  * @copyright Copyright (c) 2026
  * 
@@ -27,7 +28,6 @@
 
 /**
  * @brief Stepper motor and rmt initialization
- * 
  */
 void initSteppers(void);
 

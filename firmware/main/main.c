@@ -5,6 +5,7 @@
  * @brief 
  * @version 0.1
  * @date 2026-01-09
+ * @ingroup main
  * 
  * @copyright Copyright (c) 2026
  */
@@ -53,6 +54,8 @@ servomotor servo_arm = {
     .duty_0 = 190.0f,
     .duty_180 = 930.0f
 };
+
+static const char *TAG = "roboScribe";
 
 void IRAM_ATTR start_execution_isr(){
     int64_t current_time = esp_timer_get_time();
