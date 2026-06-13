@@ -10,3 +10,7 @@
  * @defgroup drivers Sterowniki sprzętowe
  * @brief Sterowniki zewnętrznych czujników i elementów wykonawczych.
  */
+/**
+ * @defgroup wirelessComms Komunikacja bezprzewodowa
+ * @brief Obsługa serwera, połączenia do WiFi oraz komunikacji bezprzewodowej
+ */
